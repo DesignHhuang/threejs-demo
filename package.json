@@ -98,7 +98,6 @@
     "resize-observer-polyfill": "^1.5.1",
     "showdown": "^2.1.0",
     "sortablejs": "^1.15.2",
-    "tinymce": "^5.10.9",
     "unocss": "^0.59.4",
     "vditor": "^3.10.4",
     "vue": "^3.4.25",
@@ -150,7 +149,6 @@
     "vite-plugin-vue-inspector": "^5.0.1",
     "vue-tsc": "^2.0.14"
   },
-  "packageManager": "pnpm@9.0.4",
   "engines": {
     "node": ">=18.12.0",
     "pnpm": ">=9.0.2"
