@@ -1,4 +1,5 @@
 <template>
+  <RouterView />
   <div id="container"></div>
 </template>
 

@@ -1,0 +1,132 @@
+.system-log {
+  width: 1200px;
+  margin: 8px auto 1.875rem auto;
+  border-radius: 40px;
+  min-height: 900px;
+  background: #eeeff4;
+  /* 默认/背景 */
+  box-shadow: 4px 4px 8px 0px rgba(174, 174, 192, 0.4), -2.8px -2.8px 8px 0px #fff,
+    0px 0px 0px 0.533px rgba(255, 255, 255, 0.2) inset;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 30px 30px 0 30px;
+
+    .ant-input-affix-wrapper {
+      border-radius: 15px;
+      border: 1px solid #f4f5f7;
+      height: 40px;
+      background: #e2e4ea;
+    }
+
+    .ant-input-affix-wrapper > input.ant-input {
+      background: #e2e4ea !important;
+    }
+    .ant-picker {
+      border-radius: 15px;
+      border: 1px solid #f4f5f7;
+      height: 40px;
+      background: #e2e4ea;
+    }
+  }
+
+  &__container {
+    padding: 12px 30px;
+
+    .pagination {
+      margin: 20px 0;
+      padding-right: 30px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .results {
+      margin-bottom: 10px;
+      color: #818792;
+      font-size: 14px;
+    }
+
+    .log-item {
+      border-radius: 15px;
+      background: #e2e4ea;
+      margin-bottom: 10px;
+      padding: 0 20px;
+      height: 100px;
+      position: relative;
+      cursor: default;
+
+      .content {
+        margin-left: 20px;
+
+        .title {
+          color: #2c2d30;
+          font-size: 18px;
+          width: 1000px;
+
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .desc {
+          margin-top: 8px;
+          margin-bottom: 5px;
+          color: #818792;
+          font-size: 12px;
+
+          word-break: break-all;
+          text-overflow: ellipsis;
+          display: -webkit-box;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 2; /* 这里是超出几行省略 */
+          overflow: hidden;
+        }
+        .time {
+          color: #b6b7ba;
+          font-size: 12px;
+          margin-left: 2px;
+        }
+      }
+      &:hover {
+        .hover-action {
+          opacity: 1;
+        }
+      }
+      .hover-action {
+        position: absolute;
+        right: 10px;
+        width: 300px;
+        background: linear-gradient(to right, rgba(226, 228, 234, 0) 0%, #e2e4ea 30%);
+        opacity: 0;
+        transition: opacity 0.75s;
+      }
+      .open-ticket {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 20px;
+        height: 35px;
+        background: #b6b7ba4d;
+        color: #077deb;
+        font-size: 14px;
+        width: 180px;
+        float: right;
+        cursor: pointer;
+
+        &:hover {
+          background: #b6b7ba80;
+        }
+      }
+
+      .open-ticket-top {
+        border-radius: 20px 20px 0 0;
+        border-bottom: 1px solid #e2e4ea;
+      }
+      .open-ticket-bottom {
+        border-radius: 0 0 20px 20px;
+        border-top: 1px solid #e2e4ea;
+      }
+    }
+  }
+}
