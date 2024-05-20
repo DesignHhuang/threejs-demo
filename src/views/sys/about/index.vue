@@ -1,6 +1,7 @@
 <template>
   <PageWrapper title="小栗子">
     <div class="container" ref="refContainer"></div>
+    <div id="boink">Boink!!</div>
   </PageWrapper>
 </template>
 <script lang="ts" setup>
@@ -94,27 +95,20 @@
     backgroundColor: types.rgba(),
     floorColor: types.rgba(),
     boxColor: types.rgba(),
-  });
+  }); */
 
   const boxEffectsObj = sheet.object('Effects', {
     boxGlow: types.rgba(),
     swooshScale: types.number(1, { nudgeMultiplier: 0.01 }),
     swooshPosition: types.number(0, { nudgeMultiplier: 0.01 }),
     swooshOpacity: types.number(1, { nudgeMultiplier: 0.01 }),
-  }); */
+  });
 
-  /*  const textEffectObj = sheet.object('text', {
+  const textEffectObj = sheet.object('text', {
     opacity: 1,
     text: '',
     scale: 1,
   });
-
-  textEffectObj.onValuesChange((values) => {
-    if (!boinkDom) return;
-    boinkDom.innerText = values.text;
-    boinkDom.style.opacity = '' + values.opacity;
-    boinkDom.style.fontSize = '' + values.scale + 'px';
-  }); */
 
   const setupOrbitControls = () => {
     // OrbitControls
@@ -138,12 +132,44 @@
     // Renderer
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(900, 600);
-    renderer.render(scene, camera);
-    refContainer.value.appendChild(renderer.domElement);
+    //renderer.render(scene, camera);
+
+    // Swoosh Effect Objects
+    const swooshMaterial = new THREE.MeshBasicMaterial({
+      color: 0x222222,
+      transparent: true,
+      opacity: 1,
+    });
+
+    const swooshEffect = new THREE.Group();
+
+    const swooshBig = new THREE.Mesh(geometry, swooshMaterial);
+    swooshBig.scale.set(0.02, 2, 0.02);
+    swooshBig.position.set(1, 0, -2);
+
+    const swooshSmall1 = new THREE.Mesh(geometry, swooshMaterial);
+    swooshSmall1.scale.set(0.02, 1, 0.02);
+    swooshSmall1.position.set(1, 0, 3);
+
+    const swooshSmall2 = new THREE.Mesh(geometry, swooshMaterial);
+    swooshSmall2.scale.set(0.02, 1.4, 0.02);
+    swooshSmall2.position.set(-3, 0, 0);
+
+    swooshEffect.add(swooshBig, swooshSmall1, swooshSmall2);
+    swooshEffect.position.set(0, 20, 0);
+    scene.add(swooshEffect);
+
+    // Text Effects
+    const boinkDom = document.getElementById('boink');
+    // @ts-ignore
+    const boinkText = new CSS2DObject(boinkDom);
+    boinkText.position.set(-25, 0, 0);
+    box.add(boinkText);
 
     setupOrbitControls();
 
     boxObj.onValuesChange((values) => {
+      console.log(values);
       const { xR, yR, zR } = values.rotation;
       box.rotation.set(xR, yR, zR);
       const { x, y, z } = values.position;
@@ -152,22 +178,31 @@
       box.scale.set(xS, yS, zS);
     });
 
+    textEffectObj.onValuesChange((values) => {
+      if (!boinkDom) return;
+      boinkDom.innerText = values.text;
+      boinkDom.style.opacity = '' + values.opacity;
+      boinkDom.style.fontSize = '' + values.scale + 'px';
+    });
+
     /* colorObj.onValuesChange((values) => {
-      console.log(values);
-      scene.background = new THREE.Color(values.backgroundColor.toString());
       scene.fog.color = new THREE.Color(values.backgroundColor.toString());
       document.body.style.backgroundColor = values.backgroundColor;
       floorMaterial.color.setRGB(values.floorColor.r, values.floorColor.g, values.floorColor.b);
       boxMaterial.color.setRGB(values.boxColor.r, values.boxColor.g, values.boxColor.b);
     }); */
 
-    /* boxEffectsObj.onValuesChange((values) => {
-      //材质的放射（光）颜色，基本上是不受其他光照影响的固有颜色
+    boxEffectsObj.onValuesChange((values) => {
       boxMaterial.emissive.setRGB(values.boxGlow.r, values.boxGlow.g, values.boxGlow.b);
       swooshEffect.scale.setY(values.swooshScale);
       swooshEffect.position.setY(values.swooshPosition);
       swooshMaterial.opacity = values.swooshScale;
-    }); */
+    });
+
+    renderer.render(scene, camera);
+    textRenderer.render(scene, camera);
+    //controls.update();
+    refContainer.value.appendChild(renderer.domElement);
   };
 
   // RAF Update the screen
