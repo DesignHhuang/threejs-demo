@@ -1,70 +1,93 @@
 <template>
   <PageWrapper>
-    <div id="flow"></div>
+    <div ref="refFlow" class="flow"</div>
   </PageWrapper>
 </template>
 <script lang="ts" setup>
-  import { onMounted } from 'vue';
+  import { onMounted, ref } from 'vue';
   import { PageWrapper } from '@/components/Page';
   import * as THREE from 'three';
+  import { getBoundingClientRect } from '@/utils/domUtils';
+  import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
+
+  const refFlow = ref();
+
+  let controls: OrbitControls;
   let camera: THREE.PerspectiveCamera;
-  camera = new THREE.PerspectiveCamera(45, 1200 / 800, 0.1, 1000);
-  //camera.position.set(0, 0, 0);
-  //camera.position.set(-70, 20, 70);
+  // Camera
+  camera = new THREE.PerspectiveCamera(100, 1200 / 800, 1, 300);
+  camera.position.set(0, 0, 100);
+  //camera.position.set(0, 20, 0);
 
   let scene: THREE.Scene;
+  // Scene
   scene = new THREE.Scene();
 
   let renderer: THREE.WebGLRenderer;
 
-  const initWall = () => {
-    const geometry = new THREE.PlaneGeometry(400, 20, 20, 200);
-    const material = new THREE.MeshBasicMaterial({ color: 0xffff00, side: THREE.DoubleSide });
-    const mesh = new THREE.Mesh(geometry, material);
-    console.log(mesh);
 
-    scene.add(mesh);
-  };
-
-  // 初始化容器
-  const containerInit = () => {
-    const container = document.getElementById('flow');
-
+  const init = () => {
+    // Renderer
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(1200, 800, false);
+    renderer.setSize(1200, 800);
 
-    if (container) {
-      // 初始化墙面
-      initWall();
+    const geometry = new THREE.PlaneGeometry( 600, 300 );
+    const material = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+    const plane = new THREE.Mesh( geometry, material );
+    //plane.position.set(0, 0, 100);
+    scene.add( plane );
 
-      console.log(camera);
-      console.log(scene);
-      console.log(camera);
-      renderer.render(scene, camera);
-      container.appendChild(renderer.domElement);
-    }
+    //Create a closed wavey loop
+const curve = new THREE.CatmullRomCurve3( [
+	new THREE.Vector3( -10, 0, 10 ),
+	new THREE.Vector3( -5, 5, 5 ),
+	new THREE.Vector3( 0, 0, 0 ),
+	new THREE.Vector3( 5, -5, 5 ),
+	new THREE.Vector3( 10, 0, 10 )
+] );
+
+const points = curve.getPoints( 50 );
+const curvegeometry = new THREE.BufferGeometry().setFromPoints( points );
+
+const curvematerial = new THREE.LineBasicMaterial( { color: 0xff0000 } );
+
+// Create the final object to add to the scene
+const curveObject = new THREE.Line( curvegeometry, curvematerial );
+
+
+    /* const path = new CustomSinCurve( 10 );
+const geometry = new THREE.TubeGeometry( path, 20, 2, 8, false );
+const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } ); */
+const mesh = new THREE.Mesh( geometry, material );
+scene.add( curveObject );
+   
+    controls = new OrbitControls( camera, renderer.domElement );
+
+    renderer.render(scene, camera);
+    //controls.update();
+    refFlow.value.appendChild(renderer.domElement);
   };
 
+  // RAF Update the screen
   function tick(): void {
     renderer.render(scene, camera);
+    //controls.update();
     window.requestAnimationFrame(tick);
   }
 
   onMounted(() => {
-    containerInit();
+    const box = getBoundingClientRect(refFlow.value);
+    console.log(box);
+    init();
     requestAnimationFrame(tick);
   });
 </script>
 
 <style lang="less" scoped>
-  #flow {
+  .flow {
     width: 1200px;
     height: 800px;
     border: 1px solid red;
-  }
-  canvas {
-    width: 100%;
-    height: 100%;
   }
 </style>
