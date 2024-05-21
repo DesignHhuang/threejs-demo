@@ -26,7 +26,7 @@ export class App extends BasicThreeDemo {
     // Dp stuff
 
     this.options = options;
-    this.camera.position.z = -5;
+    //this.camera.position.z = -5;
     this.camera.position.y = 7;
     this.camera.position.x = 0;
 

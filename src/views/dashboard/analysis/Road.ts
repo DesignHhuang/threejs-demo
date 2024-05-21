@@ -9,13 +9,16 @@ export class Road {
   init() {
     const options = this.options;
     const geometry = new THREE.PlaneGeometry(options.width, options.length, 20, 200);
-    const material = new THREE.ShaderMaterial({
+
+    const material = new THREE.MeshBasicMaterial({ color: 0xffff00, side: THREE.DoubleSide });
+
+    /* const material = new THREE.ShaderMaterial({
       fragmentShader,
       vertexShader,
       uniforms: {
         uColor: new THREE.Uniform(new THREE.Color(0x101012)),
       },
-    });
+    }); */
     const mesh = new THREE.Mesh(geometry, material);
 
     mesh.rotation.x = -Math.PI / 2;
