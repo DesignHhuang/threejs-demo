@@ -1,25 +1,38 @@
 <template>
   <div class="p-4">
-    <GrowCard :loading="loading" class="enter-y" />
-    <SiteAnalysis class="!my-4 enter-y" :loading="loading" />
-    <div class="md:flex enter-y">
-      <VisitRadar class="md:w-1/3 w-full" :loading="loading" />
-      <VisitSource class="md:w-1/3 !md:mx-4 !md:my-0 !my-4 w-full" :loading="loading" />
-      <SalesProductPie class="md:w-1/3 w-full" :loading="loading" />
-    </div>
+    <div id="line-flow"> </div>
   </div>
 </template>
 <script lang="ts" setup>
-  import { ref } from 'vue';
-  import GrowCard from './components/GrowCard.vue';
-  import SiteAnalysis from './components/SiteAnalysis.vue';
-  import VisitSource from './components/VisitSource.vue';
-  import VisitRadar from './components/VisitRadar.vue';
-  import SalesProductPie from './components/SalesProductPie.vue';
+  import { onMounted } from 'vue';
+  import { App } from './app';
 
-  const loading = ref(true);
+  onMounted(() => {
+    const container = document.getElementById('line-flow');
 
-  setTimeout(() => {
-    loading.value = false;
-  }, 1500);
+    const options = {
+      length: 400,
+      width: 20,
+      roadWidth: 9,
+      islandWidth: 2,
+      nPairs: 50,
+      roadSections: 3,
+    };
+
+    const myApp = new App(container, options);
+    console.log(myApp);
+    myApp.loadAssets().then(myApp.init);
+  });
 </script>
+
+<style lang="less" scoped>
+  #line-flow {
+    width: 1000px;
+    height: 600px;
+    border: 1px solid red;
+  }
+  canvas {
+    width: 100%;
+    height: 100%;
+  }
+</style>
