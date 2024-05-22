@@ -17,8 +17,9 @@
   let camera: THREE.PerspectiveCamera;
   // Camera
   camera = new THREE.PerspectiveCamera(100, 1200 / 800, 1, 300);
-  camera.position.set(0, 0, 100);
+  camera.position.set(0, 0, 200);
   //camera.position.set(0, 20, 0);
+camera.lookAt( 0, 0, 0 );
 
   let scene: THREE.Scene;
   // Scene
@@ -33,13 +34,13 @@
     renderer.setSize(1200, 800);
 
     const geometry = new THREE.PlaneGeometry( 600, 300 );
-    const material = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+    const material = new THREE.MeshBasicMaterial( {color: 0x000000, side: THREE.DoubleSide} );
     const plane = new THREE.Mesh( geometry, material );
     //plane.position.set(0, 0, 100);
     scene.add( plane );
 
     //Create a closed wavey loop
-const curve = new THREE.CatmullRomCurve3( [
+/* const curve = new THREE.CatmullRomCurve3( [
 	new THREE.Vector3( -10, 0, 10 ),
 	new THREE.Vector3( -5, 5, 5 ),
 	new THREE.Vector3( 0, 0, 0 ),
@@ -52,15 +53,28 @@ const curvegeometry = new THREE.BufferGeometry().setFromPoints( points );
 
 const curvematerial = new THREE.LineBasicMaterial( { color: 0xff0000 } );
 
-// Create the final object to add to the scene
 const curveObject = new THREE.Line( curvegeometry, curvematerial );
-
+scene.add( curveObject ); */
 
     /* const path = new CustomSinCurve( 10 );
 const geometry = new THREE.TubeGeometry( path, 20, 2, 8, false );
 const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } ); */
-const mesh = new THREE.Mesh( geometry, material );
-scene.add( curveObject );
+/* const mesh = new THREE.Mesh( geometry, material ); */
+
+
+const curve = new THREE.CatmullRomCurve3( [
+	new THREE.Vector3( -100, 100, 0 ),
+	new THREE.Vector3( -100, 100, 20),
+	new THREE.Vector3(-100, 0, 20 ),
+	new THREE.Vector3( 0, 0, 20 ),
+	new THREE.Vector3(  0, 10, 20 )
+] );
+
+//const path = curve.getPoints( 50 );
+const curvegeometry = new THREE.TubeGeometry( curve, 100, 3, 20, false );
+const curvematerial = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+const mesh = new THREE.Mesh( curvegeometry, curvematerial );
+scene.add( mesh );
    
     controls = new OrbitControls( camera, renderer.domElement );
 
