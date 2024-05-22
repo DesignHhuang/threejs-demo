@@ -14,15 +14,6 @@ export class CarLights {
   init() {
     const options = this.options;
     let curve = new THREE.LineCurve3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1));
-
-    /* const curve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(-100, 100, 0),
-      new THREE.Vector3(-100, 100, 20),
-      new THREE.Vector3(-100, 0, 20),
-      new THREE.Vector3(0, 0, 20),
-      new THREE.Vector3(0, 10, 20),
-    ]); */
-
     let baseGeometry = new THREE.TubeGeometry(curve, 25, 1, 8, false);
     let instanced = new THREE.InstancedBufferGeometry().copy(baseGeometry as any);
     instanced.instanceCount = options.nPairs * 2;
@@ -30,7 +21,7 @@ export class CarLights {
     let aOffset: any[] = [];
     let aMetrics: any[] = [];
 
-    let sectionWidth = options.roadWidth / options.lanesPerRoad;
+    let sectionWidth = options.roadWidth / options.roadSections;
 
     for (let i = 0; i < options.nPairs; i++) {
       let radius = Math.random() * 0.1 + 0.1;
@@ -82,8 +73,6 @@ export class CarLights {
         uSpeed: new THREE.Uniform(this.speed),
       },
     });
-    //let material = new THREE.MeshBasicMaterial({ color: 0x545454 });
-
     let mesh = new THREE.Mesh(instanced, material);
     mesh.frustumCulled = false;
 

@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import { BasicThreeDemo } from './BasicThreeDemo';
 import { Road } from './Road';
 import { CarLights } from './CarLights';
-
 export class App extends BasicThreeDemo {
   options;
   road;
@@ -19,7 +18,7 @@ export class App extends BasicThreeDemo {
 
     this.options = options;
     this.camera.position.z = -5;
-    this.camera.position.y = 8;
+    this.camera.position.y = 7;
     this.camera.position.x = 0;
 
     this.road = new Road(this, options);

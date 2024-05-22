@@ -9,12 +9,16 @@
   import * as THREE from 'three';
   import { getBoundingClientRect } from '@/utils/domUtils';
   import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-
+  import { Flow } from 'three/addons/modifiers/CurveModifier.js';
+  import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+import helvetiker from  'three/examples/fonts/helvetiker_regular.typeface.json'
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 
   const refFlow = ref();
 
   let controls: OrbitControls;
   let camera: THREE.PerspectiveCamera;
+  let flow;
   // Camera
   camera = new THREE.PerspectiveCamera(100, 1200 / 800, 1, 300);
   camera.position.set(0, 0, 200);
@@ -79,6 +83,52 @@ const linegeometry = new THREE.BufferGeometry().setFromPoints( path );
 const linematerial = new THREE.LineBasicMaterial( { color: 0xff0000 } );
 const curveObject = new THREE.Line( linegeometry, linematerial );
 
+/* const capsulegeometry = new THREE.SphereGeometry( 5, 32, 16); 
+const capsulematerial = new THREE.MeshBasicMaterial( {color: 0x00ff00} ); 
+const objectToCurve = new THREE.Mesh( capsulegeometry, capsulematerial );  */
+
+/* const capsulegeometry = new THREE.CapsuleGeometry(3, 20, 4, 8); 
+capsulegeometry.rotateZ( Math.PI / 2 );
+const capsulematerial = new THREE.MeshBasicMaterial( {color: 0x00ff00} ); 
+const objectToCurve = new THREE.Mesh( capsulegeometry, capsulematerial );  */
+
+const line =new THREE.CatmullRomCurve3( [
+	new THREE.Vector3( -100, 100, 0 ),
+	new THREE.Vector3( -100, 100, 1),
+] )
+  const linepath = line.getPoints( 10 ); 
+  const line2geometry = new THREE.TubeGeometry( line, 1, 3, 20, false );
+const line2Object = new THREE.Mesh( line2geometry, curvematerial );
+
+const loader = new FontLoader();
+const font = loader.parse( helvetiker);
+console.log(font)
+
+					const Textgeometry = new TextGeometry( 'Hello three.js!', {
+						font: font,
+						size: 2,
+						//depth: 0.05,
+						//curveSegments: 12,
+						/* bevelEnabled: true,
+						bevelThickness: 0.02,
+						bevelSize: 0.01,
+						bevelOffset: 0,
+						bevelSegments: 5, */
+					} );
+
+					//geometry.rotateX( Math.PI );
+
+					const Textmaterial = new THREE.MeshStandardMaterial( {
+						color: 0xffffff
+					} );
+
+					const objectToCurve = new THREE.Mesh( Textgeometry, Textmaterial );
+
+					flow = new Flow( line2Object );
+					flow.updateCurve( 0, curve );
+					scene.add( flow.object3D );
+
+
 scene.add( curveObject );
 scene.add( mesh );
    
@@ -91,6 +141,7 @@ scene.add( mesh );
 
   // RAF Update the screen
   function tick(): void {
+    flow.moveAlongCurve( 0.0006 );
     renderer.render(scene, camera);
     //controls.update();
     window.requestAnimationFrame(tick);

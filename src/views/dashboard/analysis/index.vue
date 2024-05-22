@@ -31,8 +31,4 @@
     height: 600px;
     border: 1px solid red;
   }
-  canvas {
-    width: 100%;
-    height: 100%;
-  }
 </style>

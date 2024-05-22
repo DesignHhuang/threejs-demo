@@ -9,9 +9,6 @@ export class Road {
   init() {
     const options = this.options;
     const geometry = new THREE.PlaneGeometry(options.width, options.length, 20, 200);
-
-    //const material = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
-
     const material = new THREE.ShaderMaterial({
       fragmentShader,
       vertexShader,
@@ -22,10 +19,10 @@ export class Road {
     const mesh = new THREE.Mesh(geometry, material);
 
     mesh.rotation.x = -Math.PI / 2;
-    //mesh.position.z = -120;
     mesh.position.z = -options.length / 2;
 
     this.webgl.scene.add(mesh);
+    console.log(mesh);
   }
 }
 
