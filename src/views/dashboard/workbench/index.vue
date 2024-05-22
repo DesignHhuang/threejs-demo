@@ -70,10 +70,16 @@ const curve = new THREE.CatmullRomCurve3( [
 	new THREE.Vector3(  0, 10, 20 )
 ] );
 
-//const path = curve.getPoints( 50 );
+const path = curve.getPoints( 50 );
 const curvegeometry = new THREE.TubeGeometry( curve, 100, 3, 20, false );
-const curvematerial = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+const curvematerial = new THREE.MeshMatcapMaterial( { color: 0xffffff,transparent:true,opacity:0.6} );
 const mesh = new THREE.Mesh( curvegeometry, curvematerial );
+
+const linegeometry = new THREE.BufferGeometry().setFromPoints( path );
+const linematerial = new THREE.LineBasicMaterial( { color: 0xff0000 } );
+const curveObject = new THREE.Line( linegeometry, linematerial );
+
+scene.add( curveObject );
 scene.add( mesh );
    
     controls = new OrbitControls( camera, renderer.domElement );
