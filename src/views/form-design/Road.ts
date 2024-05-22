@@ -2,6 +2,7 @@ import * as THREE from 'three';
 export class Road {
   webgl;
   options;
+  mesh;
   constructor(webgl, options) {
     this.webgl = webgl;
     this.options = options;
@@ -12,10 +13,22 @@ export class Road {
     const material = new THREE.ShaderMaterial({
       fragmentShader,
       vertexShader,
-      uniforms: {
-        uColor: new THREE.Uniform(new THREE.Color(0x101012)),
-      },
+      uniforms: Object.assign(
+        {
+          uColor: new THREE.Uniform(new THREE.Color(0x101012)),
+          uTime: new THREE.Uniform(0),
+          uTravelLength: new THREE.Uniform(options.length),
+        },
+        options.distortion.uniforms,
+      ),
     });
+
+    material.onBeforeCompile = (shader) => {
+      shader.vertexShader = shader.vertexShader.replace(
+        '#include <getDistortion_vertex>',
+        options.distortion.getDistortion,
+      );
+    };
     const mesh = new THREE.Mesh(geometry, material);
 
     mesh.rotation.x = -Math.PI / 2;
@@ -23,6 +36,10 @@ export class Road {
 
     this.webgl.scene.add(mesh);
     console.log(mesh);
+    this.mesh = mesh;
+  }
+  update(time) {
+    this.mesh.material.uniforms.uTime.value = time;
   }
 }
 
@@ -33,8 +50,15 @@ const fragmentShader = `
     }
 `;
 const vertexShader = `
+uniform float uTravelLength;
+#include <getDistortion_vertex>
 	void main(){
         vec3 transformed = position.xyz;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position.xyz, 1.);
+        
+    float progress = (transformed.y + uTravelLength / 2.) / uTravelLength;
+    vec3 distortion  = getDistortion(progress);
+    transformed.x += distortion.x;
+    transformed.z += distortion.y;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(transformed.xyz, 1.);
 	}
 `;

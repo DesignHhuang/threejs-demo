@@ -66,13 +66,23 @@ export class CarLights {
     const material = new THREE.ShaderMaterial({
       fragmentShader,
       vertexShader,
-      uniforms: {
-        uColor: new THREE.Uniform(new THREE.Color(this.color)),
-        uTravelLength: new THREE.Uniform(options.length),
-        uTime: new THREE.Uniform(0),
-        uSpeed: new THREE.Uniform(this.speed),
-      },
+      uniforms: Object.assign(
+        {
+          uColor: new THREE.Uniform(new THREE.Color(this.color)),
+          uTravelLength: new THREE.Uniform(options.length),
+          uTime: new THREE.Uniform(0),
+          uSpeed: new THREE.Uniform(this.speed),
+        },
+        options.distortion.uniforms,
+      ),
     });
+
+    material.onBeforeCompile = (shader) => {
+      shader.vertexShader = shader.vertexShader.replace(
+        '#include <getDistortion_vertex>',
+        options.distortion.getDistortion,
+      );
+    };
     let mesh = new THREE.Mesh(instanced, material);
     mesh.frustumCulled = false;
 
@@ -99,6 +109,7 @@ attribute vec2 aMetrics;
 uniform float uTime;
 uniform float uSpeed;
 uniform float uTravelLength;
+#include <getDistortion_vertex>
   void main() {
     vec3 transformed = position.xyz;
     
@@ -116,6 +127,11 @@ uniform float uTravelLength;
 		// Keep them separated to make the next step easier!
 	   transformed.z = transformed.z +zOffset ;
         transformed.xy += aOffset.xy;
+
+        
+    float progress = abs(transformed.z / uTravelLength);
+    transformed.xyz += getDistortion(progress);
+
 	
         vec4 mvPosition = modelViewMatrix * vec4(transformed,1.);
         gl_Position = projectionMatrix * mvPosition;
