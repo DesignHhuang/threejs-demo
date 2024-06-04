@@ -26,7 +26,7 @@
   scene = new THREE.Scene();
 
   let renderer: THREE.WebGLRenderer;
-  let texture
+  let texture,texture2
 
   const init = () => {
     // Renderer
@@ -57,8 +57,6 @@
     texture.repeat.x = 25;
     texture.repeat.y = 2;
     texture.offset.y = 1;
-    
-    console.log(texture)
     //const curvematerial = new THREE.MeshMatcapMaterial( { color: 0xffffff,transparent:true,opacity:0.6} );
     const curvematerial = new THREE.MeshMatcapMaterial({
       map: texture,
@@ -67,13 +65,28 @@
       side: THREE.DoubleSide,
       //opacity: 0.6,
     });
-
-    
     const mesh = new THREE.Mesh( curvegeometry, curvematerial );
     //mesh.position.y = 2;
     scene.add( mesh );
-    const mesh2 = mesh.clone()
-    mesh.position.x = 200;
+
+    const curvegeometry2 = new THREE.TubeGeometry( curve, 100, 3, 50, false );
+    const textureLoader2 = new THREE.TextureLoader();
+    texture2 = textureLoader2.load('/textures/line4.png');
+    // 设置阵列模式为 RepeatWrapping
+    texture2.wrapS = THREE.RepeatWrapping
+    texture2.wrapT = THREE.RepeatWrapping
+    texture2.repeat.x = 1;
+    texture2.repeat.y = 20;
+    //const curvematerial = new THREE.MeshMatcapMaterial( { color: 0xffffff,transparent:true,opacity:0.6} );
+    const curvematerial2 = new THREE.MeshMatcapMaterial({
+      map: texture2,
+      transparent: true,
+      //color: 0xb6bbb8,
+      side: THREE.DoubleSide,
+      //opacity: 0.6,
+    });
+    const mesh2 = new THREE.Mesh( curvegeometry2, curvematerial2 )
+    mesh2.position.x = 200;
     scene.add( mesh2 );
     //mesh.rotateZ(3.14);
     //mesh.scale.set(2, 2, 2);
@@ -95,7 +108,8 @@
   // RAF Update the screen
   function tick(): void {
     renderer.render(scene, camera);
-    texture.offset.x -= 0.04
+    texture.offset.x -= 0.01
+    texture2.offset.x -= 0.5 / 200
     controls.update();
     window.requestAnimationFrame(tick);
   }
