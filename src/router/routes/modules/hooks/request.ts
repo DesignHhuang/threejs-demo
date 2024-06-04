@@ -17,9 +17,9 @@ const charts: AppRouteModule = {
       path: 'base',
       name: 'useRequest-base',
       meta: { title: '基础用法' },
-      component: () => import('@/views/hooks/request/base'),
+      component: () => import('@/views/threejs-demo/base.vue'),
     },
-    {
+    /* {
       path: 'loading-delay',
       name: 'useRequest-loading-delay',
       meta: { title: 'Loading Delay' },
@@ -72,7 +72,7 @@ const charts: AppRouteModule = {
       name: 'useRequest-retry',
       meta: { title: '错误重试' },
       component: () => import('@/views/hooks/request/retry'),
-    },
+    }, */
   ],
 };
 
