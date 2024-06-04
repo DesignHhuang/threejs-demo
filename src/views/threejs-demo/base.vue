@@ -26,7 +26,7 @@
   scene = new THREE.Scene();
 
   let renderer: THREE.WebGLRenderer;
-  let texture,texture2
+  let texture,texture2,texture3
 
   const init = () => {
     // Renderer
@@ -54,7 +54,7 @@
     // 设置阵列模式为 RepeatWrapping
     texture.wrapS = THREE.RepeatWrapping
     texture.wrapT = THREE.RepeatWrapping
-    texture.repeat.x = 25;
+    texture.repeat.x = 10;
     texture.repeat.y = 2;
     texture.offset.y = 1;
     //const curvematerial = new THREE.MeshMatcapMaterial( { color: 0xffffff,transparent:true,opacity:0.6} );
@@ -69,19 +69,19 @@
     //mesh.position.y = 2;
     scene.add( mesh );
 
-    const curvegeometry2 = new THREE.TubeGeometry( curve, 100, 3, 50, false );
+    const curvegeometry2 = new THREE.TubeGeometry( curve, 100, 3, 10, false );
     const textureLoader2 = new THREE.TextureLoader();
     texture2 = textureLoader2.load('/textures/line4.png');
     // 设置阵列模式为 RepeatWrapping
     texture2.wrapS = THREE.RepeatWrapping
     texture2.wrapT = THREE.RepeatWrapping
     texture2.repeat.x = 1;
-    texture2.repeat.y = 20;
+    texture2.repeat.y = 30;
     //const curvematerial = new THREE.MeshMatcapMaterial( { color: 0xffffff,transparent:true,opacity:0.6} );
     const curvematerial2 = new THREE.MeshMatcapMaterial({
       map: texture2,
       transparent: true,
-      //color: 0xb6bbb8,
+      color: 0xffffff,
       side: THREE.DoubleSide,
       //opacity: 0.6,
     });
@@ -90,6 +90,26 @@
     scene.add( mesh2 );
     //mesh.rotateZ(3.14);
     //mesh.scale.set(2, 2, 2);
+
+    const textureLoader3 = new THREE.TextureLoader();
+    texture3 = textureLoader3.load('/textures/arrow.png');
+    // 设置阵列模式为 RepeatWrapping
+    texture3.wrapS = THREE.RepeatWrapping
+    texture3.wrapT = THREE.RepeatWrapping
+    texture3.repeat.x = 10;
+    texture3.repeat.y = 3;
+    texture3.offset.y = 1;
+    //const curvematerial = new THREE.MeshMatcapMaterial( { color: 0xffffff,transparent:true,opacity:0.6} );
+    const curvematerial3 = new THREE.MeshMatcapMaterial({
+      map: texture3,
+      transparent: true,
+      color: 0xe5edef,
+      side: THREE.DoubleSide,
+      opacity: 0.8,
+    });
+    const mesh3 = new THREE.Mesh( curvegeometry, curvematerial3 );
+    mesh3.position.y = -120;
+    scene.add( mesh3 );
 
     const linegeometry = new THREE.BufferGeometry().setFromPoints( path );
     const linematerial = new THREE.LineBasicMaterial( { color: 0xff0000 } );
@@ -110,6 +130,7 @@
     renderer.render(scene, camera);
     texture.offset.x -= 0.01
     texture2.offset.x -= 0.5 / 200
+    texture3.offset.x -= 0.015
     controls.update();
     window.requestAnimationFrame(tick);
   }
