@@ -9,6 +9,11 @@
   import * as THREE from 'three';
   import { getBoundingClientRect } from '@/utils/domUtils';
   import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+  import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+  import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+			import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+      import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+      import Stats from 'three/addons/libs/stats.module.js';
 
   const refFlow = ref();
 
@@ -26,7 +31,7 @@
   scene = new THREE.Scene();
 
   let renderer: THREE.WebGLRenderer;
-  let texture,texture2,texture3
+  let texture,texture2,texture3,composer,stats;
 
   const init = () => {
     // Renderer
@@ -88,6 +93,35 @@
     const mesh2 = new THREE.Mesh( curvegeometry2, curvematerial2 )
     mesh2.position.x = 200;
     scene.add( mesh2 );
+
+    const params = {
+				threshold: 0,
+				strength: 1,
+				radius: 0,
+				exposure: 1
+			};
+
+    const renderScene = new RenderPass( scene, camera );
+
+				const bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
+				bloomPass.threshold = params.threshold;
+				bloomPass.strength = params.strength;
+				bloomPass.radius = params.radius;
+
+				const outputPass = new OutputPass();
+
+				composer = new EffectComposer( renderer );
+				composer.addPass( renderScene );
+				composer.addPass( bloomPass );
+				composer.addPass( outputPass );
+        composer.setSize( 1200, 800 );
+				//
+
+				stats = new Stats();
+				
+
+
+
     //mesh.rotateZ(3.14);
     //mesh.scale.set(2, 2, 2);
 
@@ -123,6 +157,8 @@
     renderer.render(scene, camera);
     //controls.update();
     refFlow.value.appendChild(renderer.domElement);
+
+    refFlow.value.appendChild( stats.dom );
   };
 
   // RAF Update the screen
@@ -132,6 +168,8 @@
     texture2.offset.x -= 0.5 / 200
     texture3.offset.x -= 0.015
     controls.update();
+    stats.update();
+				composer.render();
     window.requestAnimationFrame(tick);
   }
 
