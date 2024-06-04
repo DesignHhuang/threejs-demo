@@ -9,7 +9,6 @@
   import * as THREE from 'three';
   import { getBoundingClientRect } from '@/utils/domUtils';
   import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-  import { Flow } from 'three/addons/modifiers/CurveModifier.js';
 
   const refFlow = ref();
 
@@ -27,6 +26,7 @@
   scene = new THREE.Scene();
 
   let renderer: THREE.WebGLRenderer;
+  let texture
 
   const init = () => {
     // Renderer
@@ -34,46 +34,56 @@
     renderer.setSize(1200, 800);
 
     const geometry = new THREE.PlaneGeometry( 600, 300 );
-    const material = new THREE.MeshBasicMaterial( {color: 0x000000, side: THREE.DoubleSide} );
+    const material = new THREE.MeshBasicMaterial( {color: 0xffffff, side: THREE.DoubleSide} );
     const plane = new THREE.Mesh( geometry, material );
     scene.add( plane );
 
-    const curve = new THREE.CatmullRomCurve3( [
-	new THREE.Vector3( -100, 100, 0 ),
-	new THREE.Vector3( -100, 100, 20),
-	new THREE.Vector3(-100, 0, 20 ),
-	new THREE.Vector3( 0, 0, 20 ),
-	new THREE.Vector3(  0, 10, 20 )
-] );
+    const curve = new THREE.CatmullRomCurve3([
+	    new THREE.Vector3( -100, 100, 0 ),
+	    new THREE.Vector3( -100, 100, 20),
+	    new THREE.Vector3(-100, 0, 20 ),
+	    new THREE.Vector3( 0, 0, 20 ),
+	    new THREE.Vector3(  0, 10, 20 )
+    ]);
 
-const path = curve.getPoints( 50 );
-const curvegeometry = new THREE.TubeGeometry( curve, 100, 3, 20, false );
-const curvematerial = new THREE.MeshMatcapMaterial( { color: 0xffffff,transparent:true,opacity:0.6} );
-const mesh = new THREE.Mesh( curvegeometry, curvematerial );
+    const path = curve.getPoints( 50 );
+    const curvegeometry = new THREE.TubeGeometry( curve, 100, 3, 20, false );
 
-const linegeometry = new THREE.BufferGeometry().setFromPoints( path );
-const linematerial = new THREE.LineBasicMaterial( { color: 0xff0000 } );
-const curveObject = new THREE.Line( linegeometry, linematerial );
+    const textureLoader = new THREE.TextureLoader();
+    texture = textureLoader.load('/textures/arrow1.jpg');
+    // 设置阵列模式为 RepeatWrapping
+    texture.wrapS = THREE.RepeatWrapping
+    texture.wrapT = THREE.RepeatWrapping
+    texture.repeat.x = 25;
+    texture.repeat.y = 2;
+    texture.offset.y = 1;
+    
+    console.log(texture)
+    //const curvematerial = new THREE.MeshMatcapMaterial( { color: 0xffffff,transparent:true,opacity:0.6} );
+    const curvematerial = new THREE.MeshMatcapMaterial({
+      map: texture,
+      transparent: true,
+      //color: 0xb6bbb8,
+      side: THREE.DoubleSide,
+      //opacity: 0.6,
+    });
 
+    
+    const mesh = new THREE.Mesh( curvegeometry, curvematerial );
+    //mesh.position.y = 2;
+    scene.add( mesh );
+    const mesh2 = mesh.clone()
+    mesh.position.x = 200;
+    scene.add( mesh2 );
+    //mesh.rotateZ(3.14);
+    //mesh.scale.set(2, 2, 2);
 
-const line =new THREE.CatmullRomCurve3( [
-	new THREE.Vector3( -100, 100, 0 ),
-	new THREE.Vector3( -100, 100, 1),
-] )
-  const linepath = line.getPoints( 10 ); 
-  const line2geometry = new THREE.TubeGeometry( line, 1, 3, 20, false );
-const line2Object = new THREE.Mesh( line2geometry, curvematerial );
+    const linegeometry = new THREE.BufferGeometry().setFromPoints( path );
+    const linematerial = new THREE.LineBasicMaterial( { color: 0xff0000 } );
+    const curveObject = new THREE.Line( linegeometry, linematerial );
 
-
-
-
-					flow = new Flow( line2Object );
-					flow.updateCurve( 0, curve );
-					scene.add( flow.object3D );
-
-
-scene.add( curveObject );
-scene.add( mesh );
+    scene.add( curveObject );
+   
    
     controls = new OrbitControls( camera, renderer.domElement );
 
@@ -84,9 +94,9 @@ scene.add( mesh );
 
   // RAF Update the screen
   function tick(): void {
-    flow.moveAlongCurve( 0.0006 );
     renderer.render(scene, camera);
-    //controls.update();
+    texture.offset.x -= 0.04
+    controls.update();
     window.requestAnimationFrame(tick);
   }
 
