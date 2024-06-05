@@ -16,16 +16,16 @@ const charts: AppRouteModule = {
     {
       path: 'base',
       name: 'useRequest-base',
-      meta: { title: '基础用法' },
+      meta: { title: '管道流动' },
       component: () => import('@/views/threejs-demo/base.vue'),
     },
-    /* {
+    {
       path: 'loading-delay',
       name: 'useRequest-loading-delay',
-      meta: { title: 'Loading Delay' },
-      component: () => import('@/views/hooks/request/loading-delay'),
+      meta: { title: 'wegame效果' },
+      component: () => import('@/views/css-demo/wegame.vue'),
     },
-    {
+    /* {
       path: 'polling',
       name: 'useRequest-polling',
       meta: { title: '轮询' },
