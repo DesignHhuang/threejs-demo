@@ -25,13 +25,13 @@ const charts: AppRouteModule = {
       meta: { title: 'wegame效果' },
       component: () => import('@/views/css-demo/wegame.vue'),
     },
-    /* {
+    {
       path: 'polling',
       name: 'useRequest-polling',
-      meta: { title: '轮询' },
-      component: () => import('@/views/hooks/request/polling'),
+      meta: { title: 'svg效果' },
+      component: () => import('@/views/css-demo/svg-motion.vue'),
     },
-    {
+    /* {
       path: 'ready',
       name: 'useRequest-ready',
       meta: { title: 'Ready' },
