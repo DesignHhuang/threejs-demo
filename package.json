@@ -100,7 +100,7 @@
     "resize-observer-polyfill": "^1.5.1",
     "showdown": "^2.1.0",
     "sortablejs": "^1.15.2",
-    "three": "^0.164.1",
+    "three": "^0.177.0",
     "unocss": "^0.59.4",
     "vditor": "^3.10.4",
     "vue": "^3.4.25",

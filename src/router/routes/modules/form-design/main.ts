@@ -26,7 +26,7 @@ const permission: AppRouteModule = {
       meta: {
         title: '示例',
       },
-      component: () => import('@/views/form-design/examples/baseForm.vue'),
+      component: () => import('@/views/form-design/examples/index.vue'),
     },
   ],
 };

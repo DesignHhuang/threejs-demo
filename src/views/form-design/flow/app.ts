@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import { BasicThreeDemo } from './BasicThreeDemo';
-import { Road } from './Road';
-import { CarLights } from './CarLights';
+import { BasicThreeDemo } from './basic-three-demo';
+import { Road } from './road';
+
 export class App extends BasicThreeDemo {
   options;
   road;
@@ -11,6 +11,7 @@ export class App extends BasicThreeDemo {
   speedUp;
   timeOffset;
   fovTarget;
+
   constructor(container, options) {
     super(container);
     // this.camera.position.z = 50;
@@ -22,9 +23,10 @@ export class App extends BasicThreeDemo {
     this.camera.position.x = 0;
 
     this.road = new Road(this, options);
-    this.leftLights = new CarLights(this, options, 0xff102a, 60);
-    this.rightLights = new CarLights(this, options, 0xfafafa, -60);
+    /* this.leftLights = new CarLights(this, options, 0xff102a, 60);
+    this.rightLights = new CarLights(this, options, 0xfafafa, -60); */
   }
+
   override loadAssets() {
     return new Promise((resolve, reject) => {
       const manager = new THREE.LoadingManager(resolve as any);
@@ -33,22 +35,25 @@ export class App extends BasicThreeDemo {
       manager.itemEnd('test');
     });
   }
+
   override init() {
     const options = this.options;
-
+    console.log(options);
     this.road.init();
-    this.leftLights.init();
-    this.leftLights.mesh.position.setX(-options.roadWidth / 2 - options.islandWidth / 2);
+    //this.leftLights.init();
+    //this.leftLights.mesh.position.setX(-options.roadWidth / 2 - options.islandWidth / 2);
 
-    this.rightLights.init();
-    this.rightLights.mesh.position.setX(options.roadWidth / 2 + options.islandWidth / 2);
+    //this.rightLights.init();
+    //this.rightLights.mesh.position.setX(options.roadWidth / 2 + options.islandWidth / 2);
 
     this.tick();
   }
+
   override update(delta) {
     let time = this.clock.elapsedTime;
-    this.leftLights.update(time);
-    this.rightLights.update(time);
+    //this.leftLights.update(time);
+    //this.rightLights.update(time);
   }
+
   override dispose() {}
 }

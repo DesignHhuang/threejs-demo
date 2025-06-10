@@ -7,7 +7,7 @@
 <script lang="ts" setup>
   import { onMounted } from 'vue';
   import { PageWrapper } from '@/components/Page';
-  import { App } from './app';
+  import { App } from './app1';
   import * as THREE from 'three';
 
   const distortion_uniforms = {
