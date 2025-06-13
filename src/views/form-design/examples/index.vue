@@ -115,13 +115,13 @@
     const mesh = new THREE.Mesh(geometry, material);
 
     mesh.rotation.x = -Math.PI / 4; // 弧度，转为角度相当于90度
-    mesh.position.z = -options.length / 2;
+    //mesh.position.z = -options.length / 2;
 
     scene.add(mesh);
 
     camera.position.z = 20;
-    camera.position.y = 7;
-    camera.position.x = 0;
+    /* camera.position.y = 7;
+    camera.position.x = 0; */
 
     const curve = new THREE.LineCurve3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(1, 0, 0));
     const baseGeometry: any = new THREE.TubeGeometry(curve, 25, 1, 8, false);
@@ -191,9 +191,16 @@
 
     const controls = new OrbitControls(camera, renderer.domElement);
 
-    controls.target.set(0, 0, 0);
-    controls.update();
+    // 动画循环
+    function animate() {
+      requestAnimationFrame(animate);
 
+      // 需要更新控制器
+      controls.update();
+
+      renderer.render(scene, camera);
+    }
+    animate();
     //renderer.setAnimationLoop(animate);
 
     /* const renderer = new THREE.WebGLRenderer({
