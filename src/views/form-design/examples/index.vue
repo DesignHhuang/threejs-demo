@@ -3,8 +3,10 @@
 </template>
 <script lang="ts" setup>
   import { onMounted, ref } from 'vue';
-  import { App } from '../flow/app';
+  /*  import { App } from '../flow/app'; */
   import * as THREE from 'three';
+  import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+  import { carLightsFragment, carLightsVertex } from '.';
 
   const energyContainerRef = ref();
 
@@ -59,9 +61,31 @@
     width: 20,
     roadWidth: 9,
     islandWidth: 2,
+    lanesPerRoad: 3,
     nPairs: 50,
-    roadSections: 3,
     //distortion: myCustomDistortion,
+
+    colors: {
+      roadColor: 0x080808,
+      islandColor: 0x0a0a0a,
+      background: 0x000000,
+      shoulderLines: 0x131318,
+      brokenLines: 0x131318,
+      /***  Only these colors can be an array ***/
+      leftCars: [0xff5f73, 0xe74d60, 0xff102a],
+      rightCars: [0xa4e3e6, 0x80d1d4, 0x53c2c6],
+      sticks: 0xa4e3e6,
+    },
+  };
+
+  const random = (base) => {
+    if (Array.isArray(base)) return Math.random() * (base[1] - base[0]) + base[0];
+    return Math.random() * base;
+  };
+
+  const pickRandom = (arr) => {
+    if (Array.isArray(arr)) return arr[Math.floor(Math.random() * arr.length)];
+    return arr;
   };
 
   onMounted(() => {
@@ -70,7 +94,7 @@
     //myApp.init();
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(45, 1000 / 600, 0.1, 10000);
+    const camera = new THREE.PerspectiveCamera(45, 1000 / 600, 0.1, 1000);
 
     const renderer = new THREE.WebGLRenderer();
     renderer.setSize(1000, 600, false);
@@ -90,24 +114,86 @@
 
     const mesh = new THREE.Mesh(geometry, material);
 
-    mesh.rotation.x = -Math.PI / 2; // 弧度，转为角度相当于90度
+    mesh.rotation.x = -Math.PI / 4; // 弧度，转为角度相当于90度
     mesh.position.z = -options.length / 2;
 
-    //scene.add(mesh);
+    scene.add(mesh);
 
-    camera.position.z = -4;
+    camera.position.z = 20;
     camera.position.y = 7;
     camera.position.x = 0;
 
-    const curve = new THREE.LineCurve3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1));
+    const curve = new THREE.LineCurve3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(1, 0, 0));
     const baseGeometry: any = new THREE.TubeGeometry(curve, 25, 1, 8, false);
     const instanced = new THREE.InstancedBufferGeometry().copy(baseGeometry);
     instanced.instanceCount = options.nPairs * 2;
-    const lignhtMaterial = new THREE.MeshBasicMaterial({ color: 0x459136 });
+
+    // 偏移量
+    let aOffset: any[] = [];
+    let aColor: any[] = [];
+
+    // 车道的宽度  路宽除以车道数
+    let laneWidth = options.roadWidth / options.lanesPerRoad;
+    // 共50对
+    for (let i = 0; i < options.nPairs; i++) {
+      let radius = 1; //半径
+      // 1a. Get it's lane index
+      // Instead of random, keep lights per lane consistent
+      let lane = i % 3;
+
+      // 1b. Get its lane's centered position
+      let laneX = lane * laneWidth - options.roadWidth / 2 + laneWidth / 2;
+
+      // 车宽度等于车道宽度的一半
+      let carWidth = 0.5 * laneWidth;
+      let offsetX = 0.5 * Math.random();
+
+      let offsetY = radius * 1.3;
+
+      let offsetZ = -random(options.length);
+
+      aOffset.push(laneX - carWidth / 2 + offsetX);
+      aOffset.push(offsetY);
+      aOffset.push(offsetZ);
+
+      aOffset.push(laneX + carWidth / 2 + offsetX);
+      aOffset.push(offsetY);
+      aOffset.push(offsetZ);
+
+      let color = pickRandom(options.colors.leftCars);
+      aColor.push(color.r);
+      aColor.push(color.g);
+      aColor.push(color.b);
+
+      aColor.push(color.r);
+      aColor.push(color.g);
+      aColor.push(color.b);
+    }
+
+    instanced.setAttribute(
+      'aOffset',
+      new THREE.InstancedBufferAttribute(new Float32Array(aOffset), 3, false),
+    );
+    instanced.setAttribute(
+      'aColor',
+      new THREE.InstancedBufferAttribute(new Float32Array(aColor), 3, false),
+    );
+
+    const lignhtMaterial = new THREE.ShaderMaterial({
+      fragmentShader: carLightsFragment,
+      vertexShader: carLightsVertex,
+    });
+
     const lignhtMesh = new THREE.Mesh(instanced, lignhtMaterial);
     scene.add(lignhtMesh);
 
     renderer.render(scene, camera);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+
+    controls.target.set(0, 0, 0);
+    controls.update();
+
     //renderer.setAnimationLoop(animate);
 
     /* const renderer = new THREE.WebGLRenderer({
