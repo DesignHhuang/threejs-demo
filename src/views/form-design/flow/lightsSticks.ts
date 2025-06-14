@@ -1,19 +1,82 @@
+import * as THREE from 'three';
+import { pickRandom, random, type Options } from '.';
+
+const sideSticksVertex = `
+#define USE_FOG;
+${THREE.ShaderChunk['fog_pars_vertex']}
+attribute float aOffset;
+attribute vec3 aColor;
+
+attribute vec2 aMetrics;
+
+uniform float uTravelLength;
+uniform float uTime;
+
+varying vec3 vColor;
+mat4 rotationY( in float angle ) {
+	return mat4(	cos(angle),		0,		sin(angle),	0,
+			 				0,		1.0,			 0,	0,
+					-sin(angle),	0,		cos(angle),	0,
+							0, 		0,				0,	1);
+}
+
+
+
+  #include <getDistortion_vertex>
+  void main(){
+    vec3 transformed = position.xyz;
+    float width = aMetrics.x;
+    float height = aMetrics.y;
+
+    transformed.xy *= vec2(width,height);
+    float time = mod(uTime  * 60. *2. + aOffset , uTravelLength);
+
+    transformed = (rotationY(3.14/2.) * vec4(transformed,1.)).xyz;
+
+    transformed.z +=  - uTravelLength + time;
+
+
+    float progress = abs(transformed.z / uTravelLength);
+    transformed.xyz += getDistortion(progress);
+
+    transformed.y += height /2.;
+    transformed.x += -width/2.;
+    vec4 mvPosition = modelViewMatrix * vec4(transformed,1.);
+    gl_Position = projectionMatrix * mvPosition;
+    vColor = aColor;
+    ${THREE.ShaderChunk['fog_vertex']}
+  }
+`;
+const sideSticksFragment = `
+#define USE_FOG;
+${THREE.ShaderChunk['fog_pars_fragment']}
+varying vec3 vColor;
+  void main(){
+    vec3 color = vec3(vColor);
+    gl_FragColor = vec4(color,1.);
+    ${THREE.ShaderChunk['fog_fragment']}
+  }
+`;
 export class LightsSticks {
+  webgl: any;
+  options: Options;
+  mesh: any;
+
   constructor(webgl, options) {
     this.webgl = webgl;
     this.options = options;
   }
   init() {
     const options = this.options;
-    const geometry = new THREE.PlaneBufferGeometry(1, 1);
+    const geometry: any = new THREE.PlaneGeometry(1, 1);
     let instanced = new THREE.InstancedBufferGeometry().copy(geometry);
     let totalSticks = options.totalSideLightSticks;
-    instanced.maxInstancedCount = totalSticks;
+    instanced.instanceCount = totalSticks;
 
     let stickoffset = options.length / (totalSticks - 1);
-    const aOffset = [];
-    const aColor = [];
-    const aMetrics = [];
+    const aOffset: any[] = [];
+    const aColor: any[] = [];
+    const aMetrics: any[] = [];
 
     let colors = options.colors.sticks;
     if (Array.isArray(colors)) {
@@ -35,15 +98,15 @@ export class LightsSticks {
       aMetrics.push(width);
       aMetrics.push(height);
     }
-    instanced.addAttribute(
+    instanced.setAttribute(
       'aOffset',
       new THREE.InstancedBufferAttribute(new Float32Array(aOffset), 1, false),
     );
-    instanced.addAttribute(
+    instanced.setAttribute(
       'aColor',
       new THREE.InstancedBufferAttribute(new Float32Array(aColor), 3, false),
     );
-    instanced.addAttribute(
+    instanced.setAttribute(
       'aMetrics',
       new THREE.InstancedBufferAttribute(new Float32Array(aMetrics), 2, false),
     );

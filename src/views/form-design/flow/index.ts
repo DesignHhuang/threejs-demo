@@ -4,14 +4,22 @@ export type Options = {
   roadWidth: number;
   islandWidth: number;
   colors: {
-    roadColor: string;
-    islandColor: string;
-    brokenLines: string;
-    shoulderLines: string;
+    roadColor: any;
+    islandColor: any;
+    brokenLines: any;
+    shoulderLines: any;
+    /***  Only these colors can be an array ***/
+    leftCars: any[];
+    rightCars: any[];
+    sticks: any;
   };
   lanesPerRoad: number;
 
   distortion: any;
+
+  /*** These ones have to be arrays of [min,max].  ***/
+  lightStickWidth: number[];
+  lightStickHeight: number[];
 
   // Percentage of the lane's width
   shoulderLinesWidthPercentage: number;
@@ -34,4 +42,14 @@ export type Options = {
   carShiftX: number | number[];
   // Self Explanatory
   carFloorSeparation: number | number[];
+};
+
+export const random = (base) => {
+  if (Array.isArray(base)) return Math.random() * (base[1] - base[0]) + base[0];
+  return Math.random() * base;
+};
+
+export const pickRandom = (arr) => {
+  if (Array.isArray(arr)) return arr[Math.floor(Math.random() * arr.length)];
+  return arr;
 };

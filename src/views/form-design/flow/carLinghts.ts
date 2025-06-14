@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { Options } from '.';
+import { pickRandom, random, type Options } from '.';
 
 const carLightsFragment = `
 
@@ -61,16 +61,6 @@ const carLightsVertex = `
     vColor = aColor;
     ${THREE.ShaderChunk['fog_vertex']}
   }`;
-
-const random = (base) => {
-  if (Array.isArray(base)) return Math.random() * (base[1] - base[0]) + base[0];
-  return Math.random() * base;
-};
-
-const pickRandom = (arr) => {
-  if (Array.isArray(arr)) return arr[Math.floor(Math.random() * arr.length)];
-  return arr;
-};
 
 export class CarLights {
   webgl: any;
