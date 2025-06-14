@@ -1,67 +1,72 @@
 <template>
-  <div class="flex gap-2xl p-6">
-    <div class="w-1/2 h-500px" ref="containerRef1"></div>
-    <div class="w-1/2 h-500px" ref="containerRef2"></div>
+  <div class="flex gap-xl p-3">
+    <div class="w-1/3 flex flex-col gap-2 items-center h-400px">
+      <div class="w-full h-360px cursor-pointer" ref="containerRef1"></div>
+      <a-button type="primary">开启流动效果1</a-button>
+    </div>
+    <div class="w-1/3 flex flex-col gap-2 items-center h-400px">
+      <div class="w-full h-360px cursor-pointer" ref="containerRef2"></div>
+      <a-button type="primary">开启流动效果2</a-button>
+    </div>
+    <div class="w-1/3 flex flex-col gap-2 items-center h-400px">
+      <div class="w-full h-360px cursor-pointer" ref="containerRef3"></div>
+      <a-button type="primary">开启流动效果3</a-button>
+    </div>
   </div>
-  <div class="flex gap-2xl">
-    <div class="w-1/2 h-500px" ref="containerRef3"></div>
-    <div class="w-1/2 h-500px" ref="containerRef4"></div>
+  <div class="flex gap-xl">
+    <div class="w-1/3 flex flex-col gap-2 items-center h-400px">
+      <div class="w-full h-360px cursor-pointer" ref="containerRef4"></div>
+      <a-button type="primary">开启流动效果4</a-button>
+    </div>
+    <div class="w-1/3 flex flex-col gap-2 items-center h-400px">
+      <div class="w-full h-360px cursor-pointer" ref="containerRef5"></div>
+      <a-button type="primary">开启流动效果5</a-button>
+    </div>
+    <div class="w-1/3 flex flex-col gap-2 items-center h-400px">
+      <div class="w-full h-360px cursor-pointer" ref="containerRef6"></div>
+      <a-button type="primary">开启流动效果6</a-button>
+    </div>
   </div>
-  <div class="flex gap-2xl">
-    <div class="w-1/2 h-500px" ref="containerRef5"></div>
-    <div class="w-1/2 h-500px" ref="containerRef6"></div>
-  </div>
-  <div class="flex gap-2xl">
-    <div class="w-1/2 h-500px" ref="containerRef7"></div>
+  <div class="flex gap-xl">
+    <div class="w-1/3 flex flex-col gap-2 items-center h-400px">
+      <div class="w-full h-360px cursor-pointer" ref="containerRef7"></div>
+      <a-button type="primary">开启流动效果7</a-button>
+    </div>
   </div>
 </template>
 <script lang="ts" setup>
   import { onMounted, ref } from 'vue';
-  import { mountainDistortion } from './distortions';
   import { App } from './app';
+  import { options1, options2, options3, options4, options5, options6, options7 } from './options';
 
   const containerRef1 = ref();
+  const containerRef2 = ref();
+  const containerRef3 = ref();
+  const containerRef4 = ref();
+  const containerRef5 = ref();
+  const containerRef6 = ref();
+  const containerRef7 = ref();
 
   onMounted(() => {
-    const options = {
-      onSpeedUp: (ev) => {},
-      onSlowDown: (ev) => {},
-      distortion: mountainDistortion,
-      length: 400,
-      roadWidth: 9,
-      islandWidth: 2,
-      lanesPerRoad: 3,
-      fov: 90,
-      fovSpeedUp: 150,
-      speedUp: 2,
-      carLightsFade: 0.4,
-      totalSideLightSticks: 50,
-      lightPairsPerRoadWay: 50,
-      shoulderLinesWidthPercentage: 0.05,
-      brokenLinesWidthPercentage: 0.1,
-      brokenLinesLengthPercentage: 0.5,
-      lightStickWidth: [0.12, 0.5],
-      lightStickHeight: [1.3, 1.7],
-      movingAwaySpeed: [60, 80],
-      movingCloserSpeed: [-120, -160],
-      carLightsLength: [400 * 0.05, 400 * 0.15],
-      carLightsRadius: [0.05, 0.14],
-      carWidthPercentage: [0.3, 0.5],
-      carShiftX: [-0.2, 0.2],
-      carFloorSeparation: [0.05, 1],
-      colors: {
-        roadColor: 0x080808,
-        islandColor: 0x0a0a0a,
-        background: 0x000000,
-        shoulderLines: 0x131318,
-        brokenLines: 0x131318,
-        leftCars: [0xff102a, 0xeb383e, 0xff102a],
-        rightCars: [0xdadafa, 0xbebae3, 0x8f97e4],
-        sticks: 0xdadafa,
-      },
-    };
+    const myApp1 = new App(containerRef1.value, options1);
+    myApp1.init();
 
-    const myApp = new App(containerRef1.value, options);
-    myApp.init();
+    const myApp2 = new App(containerRef2.value, options2);
+    myApp2.init();
+
+    const myApp3 = new App(containerRef3.value, options3);
+    myApp3.init();
+
+    const myApp4 = new App(containerRef4.value, options4);
+    myApp4.init();
+
+    const myApp5 = new App(containerRef5.value, options5);
+    myApp5.init();
+
+    const myApp6 = new App(containerRef6.value, options6);
+    myApp6.init();
+
+    const myApp7 = new App(containerRef7.value, options7);
+    myApp7.init();
   });
 </script>
