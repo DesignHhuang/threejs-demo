@@ -3,7 +3,7 @@ import type { AppRouteModule } from '@/router/types';
 import { LAYOUT } from '@/router/constant';
 
 const permission: AppRouteModule = {
-  path: '/form-designer',
+  path: '/designer',
   name: 'Form-designer',
   component: LAYOUT,
   meta: {
