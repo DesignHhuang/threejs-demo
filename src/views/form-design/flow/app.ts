@@ -139,14 +139,7 @@ export class App {
       }),
     );
     console.log(this.assets.smaa, this.camera);
-    const smaaPass = new EffectPass(
-      this.camera,
-      new SMAAEffect({this.assets.smaa.search,
-        this.assets.smaa.area,
-        SMAAPreset.MEDIUM,}
-        
-      ),
-    );
+    const smaaPass = new EffectPass(this.camera, new SMAAEffect());
     this.renderPass.renderToScreen = false;
     this.bloomPass.renderToScreen = false;
     smaaPass.renderToScreen = true;
@@ -155,31 +148,6 @@ export class App {
     this.composer.addPass(smaaPass);
   }
 
-  loadAssets() {
-    const assets = this.assets;
-    return new Promise((resolve: any, reject) => {
-      const manager = new THREE.LoadingManager(resolve);
-
-      const searchImage = new Image();
-      const areaImage = new Image();
-      assets.smaa = {};
-      searchImage.addEventListener('load', function () {
-        assets.smaa.search = this;
-        manager.itemEnd('smaa-search');
-      });
-
-      areaImage.addEventListener('load', function () {
-        assets.smaa.area = this;
-        manager.itemEnd('smaa-area');
-      });
-      manager.itemStart('smaa-search');
-      manager.itemStart('smaa-area');
-
-      searchImage.src = SMAAEffect.searchImageDataURL;
-      areaImage.src = SMAAEffect.areaImageDataURL;
-    });
-  }
-  
   init() {
     this.initPasses();
     const options = this.options;

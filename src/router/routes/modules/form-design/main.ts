@@ -28,6 +28,14 @@ const permission: AppRouteModule = {
       },
       component: () => import('@/views/form-design/examples/index.vue'),
     },
+    {
+      path: 'flow',
+      name: 'Flow',
+      meta: {
+        title: 'Flow',
+      },
+      component: () => import('@/views/form-design/flow/index.vue'),
+    },
   ],
 };
 
