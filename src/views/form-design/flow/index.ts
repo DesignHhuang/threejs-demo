@@ -1,8 +1,16 @@
 export type Options = {
+  onSpeedUp: (ev) => {};
+  onSlowDown: (ev) => {};
   width: number;
   length: number;
   roadWidth: number;
   islandWidth: number;
+
+  fov: number;
+  fovSpeedUp: number;
+  speedUp: number;
+  carLightsFade: number;
+
   colors: {
     roadColor: any;
     islandColor: any;
@@ -53,3 +61,22 @@ export const pickRandom = (arr) => {
   if (Array.isArray(arr)) return arr[Math.floor(Math.random() * arr.length)];
   return arr;
 };
+
+export function lerp(current, target, speed = 0.1, limit = 0.001) {
+  let change = (target - current) * speed;
+  if (Math.abs(change) < limit) {
+    change = target - current;
+  }
+  return change;
+}
+
+export function resizeRendererToDisplaySize(renderer, setSize) {
+  const canvas = renderer.domElement;
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
+  const needResize = canvas.width !== width || canvas.height !== height;
+  if (needResize) {
+    setSize(width, height, false);
+  }
+  return needResize;
+}
