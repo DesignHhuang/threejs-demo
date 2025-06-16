@@ -116,12 +116,8 @@ export class Road {
   createPlane(side: number, width: number, isRoad: boolean) {
     const options = this.options;
     let segments = 100;
-    const geometry = new THREE.PlaneGeometry(
-      isRoad ? options.roadWidth : options.islandWidth,
-      options.length,
-      20,
-      segments,
-    );
+    const geometry = new THREE.PlaneGeometry(width, options.length, 20, segments);
+
     let uniforms = {
       uTravelLength: new THREE.Uniform(options.length),
       uColor: new THREE.Uniform(
@@ -129,6 +125,7 @@ export class Road {
       ),
       uTime: this.uTime,
     };
+    
     if (isRoad) {
       uniforms = Object.assign(uniforms, {
         uLanes: new THREE.Uniform(options.lanesPerRoad),
