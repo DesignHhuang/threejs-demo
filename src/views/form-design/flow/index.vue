@@ -1,8 +1,8 @@
 <template>
   <div class="p-3">
     <div class="flex gap-xl">
-      <div class="w-1/3 flex flex-col gap-2 items-center h-400px">
-        <div class="w-full h-360px cursor-pointer" ref="containerRef1"></div>
+      <div class="w-full flex flex-col gap-2 items-center h-800px">
+        <div class="w-full h-800px cursor-pointer" ref="containerRef1"></div>
         <a-button type="primary" @click="start1()">开启流动特效1</a-button>
       </div>
       <div class="w-1/3 flex flex-col gap-2 items-center h-400px">

@@ -115,7 +115,8 @@ export class App {
       options.movingCloserSpeed,
       new THREE.Vector2(1, 0 + options.carLightsFade),
     );
-    this.leftSticks = new LightsSticks(this, options);
+
+    //this.leftSticks = new LightsSticks(this, options);
 
     this.fovTarget = options.fov;
 
@@ -168,8 +169,8 @@ export class App {
     this.rightCarLights.init();
     this.rightCarLights.mesh.position.setX(options.roadWidth / 2 + options.islandWidth / 2);
 
-    this.leftSticks.init();
-    this.leftSticks.mesh.position.setX(-(options.roadWidth + options.islandWidth / 2));
+    /* this.leftSticks.init();
+    this.leftSticks.mesh.position.setX(-(options.roadWidth + options.islandWidth / 2)); */
 
     this.container.addEventListener('mousedown', this.onMouseDown);
     this.container.addEventListener('mouseup', this.onMouseUp);
@@ -200,7 +201,7 @@ export class App {
 
     this.rightCarLights.update(time);
     this.leftCarLights.update(time);
-    this.leftSticks.update(time);
+    //this.leftSticks.update(time);
     this.road.update(time);
 
     let updateCamera = false;
