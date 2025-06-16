@@ -36,6 +36,14 @@ const permission: AppRouteModule = {
       },
       component: () => import('@/views/form-design/flow/index.vue'),
     },
+    {
+      path: 'anime',
+      name: 'Anime',
+      meta: {
+        title: 'Anime',
+      },
+      component: () => import('@/views/form-design/anime/index.vue'),
+    },
   ],
 };
 
