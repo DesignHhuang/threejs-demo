@@ -106,7 +106,7 @@ export class CarLights {
       let length = random(options.carLightsLength);
       let speed = random(this.speed);
 
-      let carLane = i % 3;
+      let carLane = i % 3; //  得到0，1，2
       let laneX = carLane * laneWidth - options.roadWidth / 2 + laneWidth / 2;
 
       let carWidth = random(options.carWidthPercentage) * laneWidth;
@@ -143,6 +143,10 @@ export class CarLights {
       aColor.push(color.r);
       aColor.push(color.g);
       aColor.push(color.b);
+
+      /* console.log(aOffset);
+      console.log(aMetrics);
+      console.log(aColor); */
     }
     instanced.setAttribute(
       'aOffset',
@@ -179,7 +183,7 @@ export class CarLights {
     };
     let mesh = new THREE.Mesh(instanced, material);
     mesh.frustumCulled = false;
-    this.webgl.scene.add(mesh);
+    this.webgl.scene.add(mesh); // 禁用视锥体外剔除，在视锥体外的网格也保持渲染
     this.mesh = mesh;
   }
 

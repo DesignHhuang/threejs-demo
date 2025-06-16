@@ -35,12 +35,12 @@ export const options1 = {
   carShiftX: [-0.2, 0.2],
   carFloorSeparation: [0.05, 1],
   colors: {
-    roadColor: 0x080808,
-    islandColor: 0x0a0a0a,
-    background: 0x000000,
-    shoulderLines: 0x131318,
-    brokenLines: 0x131318,
-    leftCars: [0xff102a, 0xeb383e, 0xff102a],
+    roadColor: 0x080808, //近黑色
+    islandColor: 0x0a0a0a, //近黑色
+    background: 0x000000, //黑色
+    shoulderLines: 0x131318, //近黑色
+    brokenLines: 0x131318, //近黑色
+    leftCars: [0xff102a, 0xeb383e, 0xff1082], // 红色
     rightCars: [0xdadafa, 0xbebae3, 0x8f97e4],
     sticks: 0xdadafa,
   },

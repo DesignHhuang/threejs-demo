@@ -125,10 +125,10 @@ export class Road {
       ),
       uTime: this.uTime,
     };
-    
+
     if (isRoad) {
       uniforms = Object.assign(uniforms, {
-        uLanes: new THREE.Uniform(options.lanesPerRoad),
+        uLanes: new THREE.Uniform(options.lanesPerRoad), // 每条路的车道数量
         uBrokenLinesColor: new THREE.Uniform(new THREE.Color(options.colors.brokenLines)),
         uShoulderLinesColor: new THREE.Uniform(new THREE.Color(options.colors.shoulderLines)),
         uShoulderLinesWidthPercentage: new THREE.Uniform(options.shoulderLinesWidthPercentage),
