@@ -58,7 +58,7 @@ export class App {
   constructor(container, options) {
     // Init ThreeJS Basics
     this.options = options;
-
+    // 扭曲效果
     if (this.options.distortion == null) {
       this.options.distortion = {
         uniforms: distortion_uniforms,
@@ -71,6 +71,7 @@ export class App {
     });
     this.renderer.setSize(container.offsetWidth, container.offsetHeight, false);
     this.renderer.setPixelRatio(window.devicePixelRatio);
+    // 后处理效果合成器
     this.composer = new EffectComposer(this.renderer);
     container.append(this.renderer.domElement);
 
@@ -85,7 +86,7 @@ export class App {
     this.camera.position.x = 0;
     // this.camera.rotateX(-0.4);
     this.scene = new THREE.Scene();
-
+    // 雾化效果
     let fog = new THREE.Fog(options.colors.background, options.length * 0.2, options.length * 500);
     this.scene.fog = fog;
     this.fogUniforms = {
@@ -93,11 +94,12 @@ export class App {
       fogNear: { type: 'f', value: fog.near },
       fogFar: { type: 'f', value: fog.far },
     };
+    // 时钟
     this.clock = new THREE.Clock();
+    // 资源
     this.assets = {};
     this.disposed = false;
 
-    // Create Objects
     this.road = new Road(this, options);
     this.leftCarLights = new CarLights(
       this,
@@ -128,8 +130,11 @@ export class App {
     this.onMouseDown = this.onMouseDown.bind(this);
     this.onMouseUp = this.onMouseUp.bind(this);
   }
+
+  // 初始化后期处理函数
   initPasses() {
     this.renderPass = new RenderPass(this.scene, this.camera);
+    // 泛光特效通道
     this.bloomPass = new EffectPass(
       this.camera,
       new BloomEffect({
@@ -138,13 +143,17 @@ export class App {
         resolutionScale: 1,
       }),
     );
-    console.log(this.assets.smaa, this.camera);
+    // 抗锯齿处理特效
     const smaaPass = new EffectPass(this.camera, new SMAAEffect());
+
     this.renderPass.renderToScreen = false;
     this.bloomPass.renderToScreen = false;
     smaaPass.renderToScreen = true;
+    // 主场景渲染结果不直接输出到屏幕，后续需要继续进行后期处理
     this.composer.addPass(this.renderPass);
+    // Bloom效果作为中间结果，后续需要进行抗锯齿处理
     this.composer.addPass(this.bloomPass);
+    // 最终SMAA抗锯齿结果输出到屏幕
     this.composer.addPass(smaaPass);
   }
 
@@ -152,11 +161,13 @@ export class App {
     this.initPasses();
     const options = this.options;
     this.road.init();
-    this.leftCarLights.init();
 
+    this.leftCarLights.init();
     this.leftCarLights.mesh.position.setX(-options.roadWidth / 2 - options.islandWidth / 2);
+
     this.rightCarLights.init();
     this.rightCarLights.mesh.position.setX(options.roadWidth / 2 + options.islandWidth / 2);
+
     this.leftSticks.init();
     this.leftSticks.mesh.position.setX(-(options.roadWidth + options.islandWidth / 2));
 
@@ -166,17 +177,20 @@ export class App {
 
     this.tick();
   }
+
   onMouseDown(ev) {
     if (this.options.onSpeedUp) this.options.onSpeedUp(ev);
     this.fovTarget = this.options.fovSpeedUp;
     this.speedUpTarget = this.options.speedUp;
   }
+
   onMouseUp(ev) {
     if (this.options.onSlowDown) this.options.onSlowDown(ev);
     this.fovTarget = this.options.fov;
     this.speedUpTarget = 0;
     // this.speedupLerp = 0.1;
   }
+
   update(delta) {
     let lerpPercentage = Math.exp(-(-60 * Math.log2(1 - 0.1)) * delta);
     this.speedUp += lerp(this.speedUp, this.speedUpTarget, lerpPercentage, 0.00001);

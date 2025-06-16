@@ -1,36 +1,38 @@
 <template>
-  <div class="flex gap-xl p-3">
-    <div class="w-1/3 flex flex-col gap-2 items-center h-400px">
-      <div class="w-full h-360px cursor-pointer" ref="containerRef1"></div>
-      <a-button type="primary" @click="start1()">开启流动特效1</a-button>
+  <div class="p-3">
+    <div class="flex gap-xl">
+      <div class="w-1/3 flex flex-col gap-2 items-center h-400px">
+        <div class="w-full h-360px cursor-pointer" ref="containerRef1"></div>
+        <a-button type="primary" @click="start1()">开启流动特效1</a-button>
+      </div>
+      <div class="w-1/3 flex flex-col gap-2 items-center h-400px">
+        <div class="w-full h-360px cursor-pointer" ref="containerRef2"></div>
+        <a-button type="primary" @click="start2()">开启流动特效2</a-button>
+      </div>
+      <div class="w-1/3 flex flex-col gap-2 items-center h-400px">
+        <div class="w-full h-360px cursor-pointer" ref="containerRef3"></div>
+        <a-button type="primary" @click="start3()">开启流动特效3</a-button>
+      </div>
     </div>
-    <div class="w-1/3 flex flex-col gap-2 items-center h-400px">
-      <div class="w-full h-360px cursor-pointer" ref="containerRef2"></div>
-      <a-button type="primary" @click="start2()">开启流动特效2</a-button>
+    <div class="flex gap-xl">
+      <div class="w-1/3 flex flex-col gap-2 items-center h-400px">
+        <div class="w-full h-360px cursor-pointer" ref="containerRef4"></div>
+        <a-button type="primary" @click="start4()">开启流动特效4</a-button>
+      </div>
+      <div class="w-1/3 flex flex-col gap-2 items-center h-400px">
+        <div class="w-full h-360px cursor-pointer" ref="containerRef5"></div>
+        <a-button type="primary" @click="start5()">开启流动特效5</a-button>
+      </div>
+      <div class="w-1/3 flex flex-col gap-2 items-center h-400px">
+        <div class="w-full h-360px cursor-pointer" ref="containerRef6"></div>
+        <a-button type="primary" @click="start6()">开启流动特效6</a-button>
+      </div>
     </div>
-    <div class="w-1/3 flex flex-col gap-2 items-center h-400px">
-      <div class="w-full h-360px cursor-pointer" ref="containerRef3"></div>
-      <a-button type="primary" @click="start3()">开启流动特效3</a-button>
-    </div>
-  </div>
-  <div class="flex gap-xl">
-    <div class="w-1/3 flex flex-col gap-2 items-center h-400px">
-      <div class="w-full h-360px cursor-pointer" ref="containerRef4"></div>
-      <a-button type="primary" @click="start4()">开启流动特效4</a-button>
-    </div>
-    <div class="w-1/3 flex flex-col gap-2 items-center h-400px">
-      <div class="w-full h-360px cursor-pointer" ref="containerRef5"></div>
-      <a-button type="primary" @click="start5()">开启流动特效5</a-button>
-    </div>
-    <div class="w-1/3 flex flex-col gap-2 items-center h-400px">
-      <div class="w-full h-360px cursor-pointer" ref="containerRef6"></div>
-      <a-button type="primary" @click="start6()">开启流动特效6</a-button>
-    </div>
-  </div>
-  <div class="flex gap-xl">
-    <div class="w-1/3 flex flex-col gap-2 items-center h-400px">
-      <div class="w-full h-360px cursor-pointer" ref="containerRef7"></div>
-      <a-button type="primary" @click="start7()">开启流动特效7</a-button>
+    <div class="flex gap-xl">
+      <div class="w-1/3 flex flex-col gap-2 items-center h-400px">
+        <div class="w-full h-360px cursor-pointer" ref="containerRef7"></div>
+        <a-button type="primary" @click="start7()">开启流动特效7</a-button>
+      </div>
     </div>
   </div>
 </template>
