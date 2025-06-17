@@ -20,6 +20,10 @@
 
   const clock = new THREE.Clock();
 
+  const speedUp = ref(0);
+  const speedUpTarget = ref(0);
+  const timeOffset = ref(0);
+
   function setScissorForElement(elem) {
     const canvasRect = energyContainerRef.value.getBoundingClientRect();
     const elemRect = elem.getBoundingClientRect();
@@ -159,6 +163,16 @@
     return arr;
   };
 
+  function lerp(current, target, speed = 0.1, limit = 0.001) {
+    let change = (target - current) * speed;
+    if (Math.abs(change) < limit) {
+      change = target - current;
+    }
+    return change;
+  }
+
+  const uTime = ref(new THREE.Uniform(0));
+
   onMounted(() => {
     //const myApp = new App(energyContainerRef.value, options);
     //console.log(myApp);
@@ -175,7 +189,7 @@
     renderer.value = new THREE.WebGLRenderer();
     renderer.value.setSize(1600, 600, false);
     renderer.value.setPixelRatio(window.devicePixelRatio);
-    const composer = new EffectComposer(renderer.value);
+
     energyContainerRef.value.append(renderer.value.domElement);
 
     const roadGeometry = new THREE.PlaneGeometry(options.width, options.length, 20, 200);
@@ -183,6 +197,7 @@
     let uniforms = {
       uTravelLength: new THREE.Uniform(options.length),
       uColor: new THREE.Uniform(new THREE.Color(0xccc9e7)),
+      uTime: uTime.value,
       uLanes: new THREE.Uniform(options.lanesPerRoad), // 每条路的车道数量
       uBrokenLinesColor: new THREE.Uniform(new THREE.Color(options.colors.brokenLines)),
       uShoulderLinesColor: new THREE.Uniform(new THREE.Color(options.colors.shoulderLines)),
@@ -198,14 +213,14 @@
     });
     const roadMesh = new THREE.Mesh(roadGeometry, roadMaterial);
 
-    //roadMesh.rotation.x = -Math.PI / 2; // 弧度，转为角度相当于90度
-    //roadMesh.position.z = -50;
+    roadMesh.rotation.x = -Math.PI / 2; // 弧度，转为角度相当于90度
+    roadMesh.position.z = -options.length / 2;
 
     scene.add(roadMesh);
 
-    camera.position.set(0, 0, 60);
+    camera.position.set(0, 8, -5);
 
-    const curve = new THREE.LineCurve3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, -1, 0));
+    const curve = new THREE.LineCurve3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1));
     const baseGeometry: any = new THREE.TubeGeometry(curve, 40, 1, 8, false);
     const instanced = new THREE.InstancedBufferGeometry().copy(baseGeometry);
     instanced.instanceCount = options.lightPairsPerRoadWay * 2; // 一辆车两个灯，显示两条灯带
@@ -224,6 +239,7 @@
     for (let i = 0; i < options.lightPairsPerRoadWay; i++) {
       let radius = random([0.05, 0.14]);
       let length = random([400 * 0.05, 400 * 0.15]);
+      let speed = random([60, 80]);
 
       let carLane = i % 3; // 0，1，2
       //  Get its lane's centered position
@@ -234,8 +250,8 @@
       let carShiftX = random([-0.2, 0.2]) * laneWidth;
       laneX += carShiftX;
 
-      let offsetY = -random(options.length);
-      let offsetZ = random([0, 5]) + radius * 1.3;
+      let offsetY = random([0, 5]) + radius * 1.3;
+      let offsetZ = -random(options.length);
 
       aOffset.push(laneX - carWidth / 2);
       aOffset.push(offsetY);
@@ -247,9 +263,11 @@
 
       aMetrics.push(radius);
       aMetrics.push(length);
+      aMetrics.push(speed);
 
       aMetrics.push(radius);
       aMetrics.push(length);
+      aMetrics.push(speed);
 
       let color = pickRandom(colors);
       aColor.push(color.r);
@@ -267,7 +285,7 @@
     );
     instanced.setAttribute(
       'aMetrics',
-      new THREE.InstancedBufferAttribute(new Float32Array(aMetrics), 2, false),
+      new THREE.InstancedBufferAttribute(new Float32Array(aMetrics), 3, false),
     );
     instanced.setAttribute(
       'aColor',
@@ -279,6 +297,7 @@
       vertexShader: carLightsVertex,
       //transparent: true,
       uniforms: Object.assign({
+        uTime: new THREE.Uniform(0),
         uTravelLength: new THREE.Uniform(options.length),
       }),
     });
@@ -309,38 +328,13 @@
 
     const update = (delta) => {
       let lerpPercentage = Math.exp(-(-60 * Math.log2(1 - 0.1)) * delta);
-      this.speedUp += lerp(this.speedUp, this.speedUpTarget, lerpPercentage, 0.00001);
-      this.timeOffset += this.speedUp * delta;
+      speedUp.value += lerp(speedUp.value, speedUpTarget.value, lerpPercentage, 0.00001);
+      timeOffset.value += speedUp.value * delta;
 
-      let time = this.clock.elapsedTime + this.timeOffset;
+      let time = clock.elapsedTime + timeOffset.value;
 
-      this.rightCarLights.update(time);
-      this.leftCarLights.update(time);
-      this.leftSticks.update(time);
-      this.road.update(time);
-
-      let updateCamera = false;
-      let fovChange = lerp(this.camera.fov, this.fovTarget, lerpPercentage);
-      if (fovChange !== 0) {
-        this.camera.fov += fovChange * delta * 6;
-        updateCamera = true;
-      }
-
-      if (this.options.distortion.getJS) {
-        const distortion = this.options.distortion.getJS(0.025, time);
-
-        this.camera.lookAt(
-          new THREE.Vector3(
-            this.camera.position.x + distortion.x,
-            this.camera.position.y + distortion.y,
-            this.camera.position.z + distortion.z,
-          ),
-        );
-        updateCamera = true;
-      }
-      if (updateCamera) {
-        this.camera.updateProjectionMatrix();
-      }
+      lignhtMesh.material.uniforms.uTime.value = time;
+      uTime.value.value = time;
     };
 
     function render() {
@@ -358,7 +352,8 @@
         cameraHelper.visible = false;
         scene.background = new THREE.Color(0x000000);
         // 渲染
-        //renderer.value.render(scene, camera);
+        renderer.value.render(scene, camera);
+        const composer = new EffectComposer(renderer.value);
         composer.render(delta);
         update(delta);
       }
@@ -371,9 +366,7 @@
         // 在第二台摄像机中绘制cameraHelper
         cameraHelper.visible = true;
         scene.background.set(0x000040);
-        //renderer.value.render(scene, camera2);
-        composer.render(delta);
-        update(delta);
+        renderer.value.render(scene, camera2);
       }
       requestAnimationFrame(render);
     }

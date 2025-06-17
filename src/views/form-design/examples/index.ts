@@ -15,6 +15,7 @@ export const carLightsVertex = `
   attribute vec3 aColor;
 
   uniform float uTravelLength;
+  uniform float uTime;
 
   varying vec2 vUv; 
   varying vec3 vColor; 
@@ -23,12 +24,13 @@ export const carLightsVertex = `
     vec3 transformed = position.xyz;
     float radius = aMetrics.r;
     float myLength = aMetrics.g;
+    float speed = aMetrics.b;
 
-    transformed.xz *= radius ;
-    transformed.y *= myLength;
+    transformed.xy *= radius;
+    transformed.z *= myLength;
 
-    transformed.y = transformed.y + aOffset.y;
-    transformed.xz += aOffset.xz;
+    transformed.z += myLength-mod( uTime *speed + aOffset.z, uTravelLength);
+    transformed.xy += aOffset.xy;
 
     vec4 mvPosition = modelViewMatrix * vec4(transformed, 1.);
     gl_Position = projectionMatrix * mvPosition;
