@@ -39,7 +39,7 @@
     renderer.setSize(1200, 800);
 
     const geometry = new THREE.PlaneGeometry( 600, 300 );
-    const material = new THREE.MeshBasicMaterial( {color: 0xffffff, side: THREE.DoubleSide} );
+    const material = new THREE.MeshBasicMaterial( {color: 0x000000, side: THREE.DoubleSide} );
     const plane = new THREE.Mesh( geometry, material );
     scene.add( plane );
 
