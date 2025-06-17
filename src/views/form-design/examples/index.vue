@@ -120,10 +120,10 @@
 
   void main() {
     vec3 transformed = position.xyz;
-
-    vec4 mvPosition = modelViewMatrix * vec4(transformed,1.);
-    gl_Position = projectionMatrix * mvPosition;
-    vUv = uv;
+  
+  vec4 mvPosition = modelViewMatrix * vec4(transformed,1.);
+  gl_Position = projectionMatrix * mvPosition;
+  vUv = uv;
   }`;
 
   const myCustomDistortion = {
