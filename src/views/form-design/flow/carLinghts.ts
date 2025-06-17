@@ -28,11 +28,8 @@ const carLightsVertex = `
   attribute vec3 aMetrics;
   attribute vec3 aColor;
 
-  
-
   uniform float uTravelLength;
   uniform float uTime;
-  uniform float uSpeed;
 
   varying vec2 vUv; 
   varying vec3 vColor; 
@@ -182,8 +179,8 @@ export class CarLights {
       );
     };
     let mesh = new THREE.Mesh(instanced, material);
-    mesh.frustumCulled = false;
-    this.webgl.scene.add(mesh); // 禁用视锥体外剔除，在视锥体外的网格也保持渲染
+    mesh.frustumCulled = false; // 禁用视锥体外剔除，在视锥体外的网格也保持渲染
+    this.webgl.scene.add(mesh);
     this.mesh = mesh;
   }
 
