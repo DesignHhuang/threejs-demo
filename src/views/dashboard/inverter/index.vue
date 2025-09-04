@@ -1,6 +1,23 @@
 <template>
   <PageWrapper>
     <div ref="refInverter" class="flow"></div>
+
+    <div
+      style="
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 15px;
+        border-radius: 8px;
+        font-family: Arial;
+      "
+    >
+      <div>光伏板实时发电量：<span id="power">0</span> kW</div>
+      <div>储能电池容量：<span id="batteryLevel">0</span> %</div>
+      <div>系统状态：<span id="systemStatus">待机</span></div>
+    </div>
   </PageWrapper>
 </template>
 
@@ -8,32 +25,34 @@
   import { onMounted, ref } from 'vue';
   import { PageWrapper } from '@/components/Page';
   import * as THREE from 'three';
-  import { getBoundingClientRect } from '@/utils/domUtils';
   import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-  import { Flow } from 'three/addons/modifiers/CurveModifier.js';
-  import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
-  import helvetiker from 'three/examples/fonts/helvetiker_regular.typeface.json';
   import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-  import solarpanelTexture from '@/assets/images/sloarpanel.png';
 
   const refInverter = ref();
 
+  let controls: OrbitControls;
+  let scene: THREE.Scene;
+  // Scene
+  scene = new THREE.Scene();
+
+  let camera: THREE.PerspectiveCamera;
+  // 2. 创建相机（透视相机，适合模拟人眼视角）
+  camera = new THREE.PerspectiveCamera(
+    75, // 视野角度（FOV）
+    1200 / 800, // 宽高比
+    0.1, // 近裁剪面
+    1000, // 远裁剪面
+  );
+  camera.position.set(10, 8, 15); // 相机位置（x,y,z），确保能看到整个场景
+
+  let renderer: THREE.WebGLRenderer;
+
   const init = () => {
     // 1. 创建场景
-    const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xf0f5ff); // 浅蓝色背景（模拟天空）
 
-    // 2. 创建相机（透视相机，适合模拟人眼视角）
-    const camera = new THREE.PerspectiveCamera(
-      75, // 视野角度（FOV）
-      1200 / 800, // 宽高比
-      0.1, // 近裁剪面
-      1000, // 远裁剪面
-    );
-    camera.position.set(10, 8, 15); // 相机位置（x,y,z），确保能看到整个场景
-
     // 3. 创建渲染器（抗锯齿+适配窗口）
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(1200, 800);
     renderer.shadowMap.enabled = true; // 开启阴影（增强真实感）
 
@@ -134,17 +153,17 @@
     // 加载逆变器模型（替换为你的模型路径）
     const gltfLoader = new GLTFLoader();
     gltfLoader.load(
-      './battery.gltf',
+      'src/assets/images/battery.gltf',
       (gltf) => {
         console.log(gltf);
         const inverter = gltf.scene;
 
         // 调整模型位置和大小（根据实际模型调整）
-        inverter.position.set(0, 0, 1);
-        inverter.scale.set(0.8, 0.8, 0.8);
+        inverter.position.set(2, 2, 10);
+        inverter.scale.set(12, 12, 12);
 
         // 开启阴影
-        /* inverter.traverse((child) => {
+        /*  inverter.traverse((child) => {
           if (child.isMesh) {
             child.castShadow = true;
             child.receiveShadow = true;
@@ -165,7 +184,7 @@
     );
 
     // 4. 轨道控制器（支持鼠标交互）
-    const controls = new OrbitControls(camera, renderer.domElement);
+    controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true; // 阻尼效果（滑动更顺滑）
     controls.target.set(0, 2, 0); // 控制焦点（对准场景中心）
 
@@ -173,8 +192,168 @@
     refInverter.value.appendChild(renderer.domElement);
   };
 
+  // 创建粒子系统（能量流）
+  function createEnergyFlow() {
+    // 粒子几何（点集合）
+    const particlesGeometry = new THREE.BufferGeometry();
+    const particleCount = 100; // 粒子数量
+    const positions = new Float32Array(particleCount * 3); // 每个粒子3个坐标（x,y,z）
+
+    // 初始化粒子位置（光伏板到电池的路径）
+    for (let i = 0; i < particleCount * 3; i += 3) {
+      // x：从光伏板（-3）到电池（3）
+      positions[i] = THREE.MathUtils.randFloat(-3, 3);
+      // y：高度1.2m（与光伏板、逆变器中心对齐）
+      positions[i + 1] = 1.2;
+      // z：从光伏板（5）到逆变器（1）再到电池（-3）
+      positions[i + 2] = THREE.MathUtils.randFloat(-3, 5);
+    }
+    particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+    // 粒子材质（带颜色的点）
+    const particlesMaterial = new THREE.PointsMaterial({
+      size: 0.08, // 粒子大小
+      color: 0xffff00, // 初始黄色（光伏板端）
+      transparent: true,
+      opacity: 0.8,
+    });
+
+    const energyFlow = new THREE.Points(particlesGeometry, particlesMaterial);
+    scene.add(energyFlow);
+    scene.userData.energyFlow = energyFlow;
+  }
+
+  // 粒子动画：模拟能量流动（每帧更新粒子位置）
+  function updateEnergyFlow() {
+    const energyFlow = scene.userData.energyFlow;
+    if (!energyFlow) return;
+
+    const positions = energyFlow.geometry.attributes.position.array;
+    const particleCount = positions.length / 3;
+
+    for (let i = 0; i < particleCount; i++) {
+      const idx = i * 3;
+      // z轴移动（向电池方向移动，速度0.02）
+      positions[idx + 2] -= 0.02;
+
+      // 粒子超出电池范围（z < -3）时，重置到光伏板端（z=5）
+      if (positions[idx + 2] < -3) {
+        positions[idx] = THREE.MathUtils.randFloat(-3, 3);
+        positions[idx + 2] = 5;
+      }
+
+      // 颜色渐变：z>1（光伏板端）→ 黄色；1>z>-1（逆变器端）→ 橙色；z<-1（电池端）→ 绿色
+      const z = positions[idx + 2];
+      let color;
+      if (z > 1) color = 0xffff00;
+      else if (z > -1) color = 0xff9900;
+      else color = 0x33cc33;
+      energyFlow.material.color.set(color);
+    }
+
+    energyFlow.geometry.attributes.position.needsUpdate = true; // 通知Three.js更新位置
+  }
+
+  // 模拟实时数据（每2秒更新一次）
+  function simulateRealData() {
+    const powerElem = document.getElementById('power') as any;
+    const batteryLevelElem = document.getElementById('batteryLevel') as any;
+    const statusElem = document.getElementById('systemStatus') as any;
+
+    // 随机生成发电量（1~5 kW）
+    const power = THREE.MathUtils.randFloat(1, 5).toFixed(1);
+    powerElem.textContent = power;
+
+    // 电池容量：根据发电量变化（充电时增加，放电时减少）
+    let batteryLevel: any = parseFloat(batteryLevelElem.textContent) || 50;
+    const isCharging = batteryLevel < 90; // 容量<90%时充电，否则放电
+    if (isCharging) {
+      batteryLevel += THREE.MathUtils.randFloat(0.5, 1.5); // 充电：每次+0.5~1.5%
+      statusElem.textContent = '充电中';
+    } else {
+      batteryLevel -= THREE.MathUtils.randFloat(0.3, 0.8); // 放电：每次-0.3~0.8%
+      statusElem.textContent = '放电中';
+    }
+    batteryLevel = Math.max(10, Math.min(100, batteryLevel)).toFixed(1); // 限制在10~100%
+    batteryLevelElem.textContent = batteryLevel;
+
+    // 联动电池颜色：充电（绿色）、放电（红色）、待机（蓝色）
+    const batteries = scene.userData.batteries;
+    if (batteries) {
+      batteries.forEach((battery) => {
+        battery.userData.isCharging = isCharging;
+        if (isCharging) {
+          battery.userData.material.color.set(0x33cc33); // 绿色（充电）
+        } else {
+          battery.userData.material.color.set(0xff4444); // 红色（放电）
+        }
+      });
+    }
+
+    // 2秒后再次更新数据
+    setTimeout(simulateRealData, 2000);
+  }
+
+  // 渲染循环（核心：每帧更新场景）
+  function animate() {
+    requestAnimationFrame(animate);
+
+    // 更新轨道控制器（保持阻尼效果）
+    controls.update();
+
+    // 更新能量流动效果
+    updateEnergyFlow();
+
+    // 渲染场景
+    renderer.render(scene, camera);
+  }
+
+  // 窗口大小适配
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  // 点击交互：点击光伏板/电池显示详情
+  /* window.addEventListener('click', (event) => {
+    // 1. 将鼠标坐标转换为Three.js屏幕坐标
+    const mouse = new THREE.Vector2();
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+    // 2. 创建射线检测（从相机到鼠标点击点）
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(mouse, camera);
+
+    // 3. 检测与哪些物体相交
+    const intersects = raycaster.intersectObjects([
+      ...(scene.userData.panels || []),
+      ...(scene.userData.batteries || []),
+    ]);
+
+    // 4. 处理相交结果（显示详情）
+    if (intersects.length > 0) {
+      const target = intersects[0].object;
+      let info = '';
+      if (scene.userData.panels.includes(target)) {
+        info = '光伏板\n实时发电量：' + document.getElementById('power').textContent + ' kW';
+      } else if (scene.userData.batteries.includes(target)) {
+        info =
+          '储能电池\n当前容量：' +
+          document.getElementById('batteryLevel').textContent +
+          '%\n状态：' +
+          (target.userData.isCharging ? '充电中' : '放电中');
+      }
+      alert(info); // 实际项目中可替换为自定义弹窗
+    }
+  }); */
+
   onMounted(() => {
     init();
+    createEnergyFlow();
+    simulateRealData();
+    animate();
   });
 </script>
 
