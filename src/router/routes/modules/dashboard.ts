@@ -31,6 +31,14 @@ const dashboard: AppRouteModule = {
         title: t('routes.dashboard.workbench'),
       },
     },
+    {
+      path: 'inverter',
+      name: 'Inverter',
+      component: () => import('@/views/dashboard/inverter/index.vue'),
+      meta: {
+        title: '逆变器',
+      },
+    },
   ],
 };
 
