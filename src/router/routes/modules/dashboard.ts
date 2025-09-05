@@ -39,6 +39,14 @@ const dashboard: AppRouteModule = {
         title: '逆变器',
       },
     },
+    {
+      path: 'compose',
+      name: 'Compose',
+      component: () => import('@/views/dashboard/inverter/compose.vue'),
+      meta: {
+        title: '逆变器组合',
+      },
+    },
   ],
 };
 
