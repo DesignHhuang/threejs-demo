@@ -1,8 +1,6 @@
 <template>
   <PageWrapper>
     <div ref="refInverter" class="flow"></div>
-
-    <button id="disassembleBtn">拆解设备</button>
   </PageWrapper>
 </template>
 
@@ -12,144 +10,102 @@
   import * as THREE from 'three';
   import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
   import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-  import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+  import { EXRLoader } from 'three/addons/loaders/EXRLoader.js';
 
   const refInverter = ref();
 
-  // 初始化场景
-  const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xf0f0f0);
+  let controls: OrbitControls;
+  let scene: THREE.Scene;
+  // Scene
+  scene = new THREE.Scene();
 
-  // 初始化相机
-  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-  camera.position.z = 15;
-
-  // 初始化渲染器
-  const renderer = new THREE.WebGLRenderer();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  document.body.appendChild(renderer.domElement);
-
-  // 添加灯光
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-  scene.add(ambientLight);
-
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-  directionalLight.position.set(5, 5, 5);
-  scene.add(directionalLight);
-
-  // 设备组件 - 这里用简单几何体模拟设备零件
-  const components = [];
-
-  // 主体
-  const mainBody = new THREE.Mesh(
-    new THREE.BoxGeometry(4, 3, 2),
-    new THREE.MeshPhongMaterial({ color: 0x3498db }),
+  let camera: THREE.PerspectiveCamera;
+  camera = new THREE.PerspectiveCamera(
+    50, // 视野角度（FOV）
+    1200 / 800, // 宽高比
+    0.1, // 近裁剪面
+    1000, // 远裁剪面
   );
-  components.push({
-    mesh: mainBody,
-    targetPosition: new THREE.Vector3(0, 0, 0), // 初始位置
-  });
-  scene.add(mainBody);
+  camera.position.set(0, 2, 8); // 相机位置（x,y,z），确保能看到整个场景
 
-  // 左侧部件
-  const leftPart = new THREE.Mesh(
-    new THREE.BoxGeometry(2, 2, 1.5),
-    new THREE.MeshPhongMaterial({ color: 0xe74c3c }),
-  );
-  leftPart.position.x = -3;
-  components.push({
-    mesh: leftPart,
-    targetPosition: new THREE.Vector3(-7, 0, 0), // 拆解后位置
-  });
-  scene.add(leftPart);
+  let renderer: THREE.WebGLRenderer;
 
-  // 右侧部件
-  const rightPart = new THREE.Mesh(
-    new THREE.BoxGeometry(2, 2, 1.5),
-    new THREE.MeshPhongMaterial({ color: 0x2ecc71 }),
-  );
-  rightPart.position.x = 3;
-  components.push({
-    mesh: rightPart,
-    targetPosition: new THREE.Vector3(7, 0, 0), // 拆解后位置
-  });
-  scene.add(rightPart);
+  const init = () => {
+    //scene.background = new THREE.Color(0xf0f5ff); // 浅蓝色背景（模拟天空）
+    // 初始化场景
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(1200, 800);
+    // 配置渲染器以适配EXR高动态范围
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 0.8;
+    refInverter.value.appendChild(renderer.domElement);
 
-  // 顶部部件
-  const topPart = new THREE.Mesh(
-    new THREE.CylinderGeometry(1, 1, 2, 32),
-    new THREE.MeshPhongMaterial({ color: 0xf39c12 }),
-  );
-  topPart.position.y = 2.5;
-  topPart.rotation.x = Math.PI / 2;
-  components.push({
-    mesh: topPart,
-    targetPosition: new THREE.Vector3(0, 6, 0), // 拆解后位置
-  });
-  scene.add(topPart);
+    // 控制器
+    controls = new OrbitControls(camera, renderer.domElement);
 
-  // 记录初始位置，用于后续可能的组装功能
-  components.forEach((comp) => {
-    comp.initialPosition = new THREE.Vector3().copy(comp.mesh.position);
-  });
+    /* const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(1, -20, 100);
+    directionalLight.castShadow = true; // 平行光产生阴影
+    scene.add(directionalLight); */
 
-  // 拆解状态标记
-  let isDisassembled = false;
+    // 环境光（照亮暗部，避免过暗）
+    /* const ambientLight = new THREE.AmbientLight(0x404040, 1);
+    scene.add(ambientLight); */
 
-  // 拆解/组装函数
-  function toggleDisassembly() {
-    isDisassembled = !isDisassembled;
+    new EXRLoader().load('src/assets/images/GSG_PRO_STUDIOS_METAL_002.exr', function (texture) {
+      texture.mapping = THREE.EquirectangularReflectionMapping;
 
-    // 使用GSAP实现平滑动画
-    components.forEach((comp) => {
-      const targetPos = isDisassembled ? comp.targetPosition : comp.initialPosition;
+      // 优化纹理参数
+      texture.anisotropy = 1; // 降低各向异性，减少近距离细节
+      texture.generateMipmaps = true;
+      texture.minFilter = THREE.LinearMipmapLinearFilter; // 远处更模糊
+      texture.magFilter = THREE.LinearFilter;
 
-      gsap.to(comp.mesh.position, {
-        x: targetPos.x,
-        y: targetPos.y,
-        z: targetPos.z,
-        duration: 1.5,
-        ease: 'power2.inOut',
-      });
+      scene.background = texture;
+      scene.environment = texture;
 
-      // 可以添加旋转动画增强效果
-      gsap.to(comp.mesh.rotation, {
-        x: isDisassembled ? Math.random() * 0.5 : 0,
-        y: isDisassembled ? Math.random() * 0.5 : 0,
-        duration: 1.5,
-        ease: 'power2.inOut',
+      // 加载模型
+      new GLTFLoader().load('src/assets/images/inverter_pbr.glb', (gltf) => {
+        const model = gltf.scene;
+
+        model.position.set(0, 0, 0);
+
+        scene.add(model);
+
+        // 调整PBR材质颜色
+        /* model.traverse((child) => {
+          console.log(child);
+          if (child.isMesh && child.material.isMeshStandardMaterial) {
+            const mat = child.material;
+            mat.color.set(0xffcc00); // 设置基础颜色为金色
+            mat.metalness = 0.8; // 金属质感
+            mat.roughness = 0.2; // 光滑表面
+            mat.envMapIntensity = 1.2; // 增强环境反射
+            mat.needsUpdate = true;
+          }
+        }); */
       });
     });
+  };
 
-    // 更新按钮文本
-    document.getElementById('disassembleBtn').textContent = isDisassembled
-      ? '组装设备'
-      : '拆解设备';
+  // 渲染循环
+  function animate() {
+    requestAnimationFrame(animate);
+    controls.update();
+    renderer.render(scene, camera);
   }
 
-  // 绑定按钮事件
-  document.getElementById('disassembleBtn').addEventListener('click', toggleDisassembly);
-
-  // 窗口大小调整
+  // 窗口 resize 处理
   window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
   });
 
-  // 动画循环
-  function animate() {
-    requestAnimationFrame(animate);
-
-    // 轻微旋转视角，方便观察3D效果
-    if (!isDisassembled) {
-      scene.rotation.y += 0.005;
-    }
-
-    renderer.render(scene, camera);
-  }
-
-  animate();
+  onMounted(() => {
+    init();
+    animate();
+  });
 </script>
 
 <style lang="less" scoped>

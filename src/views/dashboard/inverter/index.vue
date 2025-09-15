@@ -153,34 +153,26 @@
     // 加载逆变器模型（替换为你的模型路径）
     const gltfLoader = new GLTFLoader();
 
-    new RGBELoader().load('src/assets/images/royal_esplanade_1k.hdr', function (texture) {
-      texture.mapping = THREE.EquirectangularReflectionMapping;
+    gltfLoader.load(
+      'src/assets/images/inverter_pbr.glb',
+      (gltf) => {
+        console.log(gltf);
+        const inverter = gltf.scene;
 
-      scene.background = texture;
-      scene.environment = texture;
+        // 调整模型位置和大小（根据实际模型调整）
+        inverter.position.set(1, 2, 8);
+        inverter.scale.set(4, 4, 4);
 
-      // model
-
-      gltfLoader.load(
-        'src/assets/images/battery.gltf',
-        (gltf) => {
-          console.log(gltf);
-          const inverter = gltf.scene;
-
-          // 调整模型位置和大小（根据实际模型调整）
-          inverter.position.set(1, 2, 8);
-          inverter.scale.set(4, 4, 4);
-
-          // 开启阴影
-          /*  inverter.traverse((child) => {
+        // 开启阴影
+        /*  inverter.traverse((child) => {
           if (child.isMesh) {
             child.castShadow = true;
             child.receiveShadow = true;
           }
         }); */
 
-          // 遍历所有材质，修复纹理颜色空间
-          /* inverter.traverse((child) => {
+        // 遍历所有材质，修复纹理颜色空间
+        /* inverter.traverse((child) => {
           if (child.isMesh && child.material) {
             const mat = child.material;
             // 对基础颜色纹理设置 sRGB 编码
@@ -194,19 +186,27 @@
           }
         }); */
 
-          scene.add(inverter);
-          scene.userData.inverter = inverter; // 存储引用
-        },
-        (xhr) => {
-          // 加载进度
-          console.log(`模型加载进度：${(xhr.loaded / xhr.total) * 100}%`);
-        },
-        (error) => {
-          // 加载错误
-          console.error('模型加载失败：', error);
-        },
-      );
-    });
+        scene.add(inverter);
+        scene.userData.inverter = inverter; // 存储引用
+      },
+      (xhr) => {
+        // 加载进度
+        console.log(`模型加载进度：${(xhr.loaded / xhr.total) * 100}%`);
+      },
+      (error) => {
+        // 加载错误
+        console.error('模型加载失败：', error);
+      },
+    );
+
+    /* new RGBELoader().load('src/assets/images/royal_esplanade_1k.hdr', function (texture) {
+      texture.mapping = THREE.EquirectangularReflectionMapping;
+
+      scene.background = texture;
+      scene.environment = texture;
+
+      // model
+    }); */
 
     // 4. 轨道控制器（支持鼠标交互）
     controls = new OrbitControls(camera, renderer.domElement);
