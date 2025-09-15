@@ -61,7 +61,7 @@
     controls.enableDamping = true;
 
     controls.minDistance = 1;
-    controls.maxDistance = 20;
+    //controls.maxDistance = 20;
 
     controls.maxPolarAngle = Math.PI / 2;
 
@@ -76,7 +76,7 @@
     scene.add(hemiLightHelper);
 
     const directionalLight = new THREE.DirectionalLight(0xffffff, 3);
-    directionalLight.position.set(-8, 8, 50);
+    directionalLight.position.set(-8, 60, 100);
     directionalLight.castShadow = true; // 平行光产生阴影
     scene.add(directionalLight);
 
