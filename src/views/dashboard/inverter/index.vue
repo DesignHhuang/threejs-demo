@@ -60,9 +60,13 @@
     // 5. 添加光照（模拟太阳+环境光）
     // 平行光（模拟太阳光，带阴影）
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
-    directionalLight.position.set(10, 20, 15);
+    directionalLight.position.set(0, 6, 20);
     directionalLight.castShadow = true; // 平行光产生阴影
     scene.add(directionalLight);
+
+    /* const dirLightHelper = new THREE.DirectionalLightHelper(directionalLight, 10);
+    scene.add(dirLightHelper); */
+
     // 环境光（照亮暗部，避免过暗）
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
