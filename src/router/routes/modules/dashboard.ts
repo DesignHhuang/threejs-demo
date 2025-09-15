@@ -47,6 +47,14 @@ const dashboard: AppRouteModule = {
         title: '逆变器组合',
       },
     },
+    {
+      path: 'house',
+      name: 'House',
+      component: () => import('@/views/dashboard/inverter/house.vue'),
+      meta: {
+        title: '房屋效果',
+      },
+    },
   ],
 };
 
