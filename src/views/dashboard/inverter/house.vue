@@ -27,10 +27,22 @@
   // 存储房屋模型引用
   let houseModel: THREE.Object3D | null = null;
 
+  let raycaster = new THREE.Raycaster();
+  let mouse = new THREE.Vector2();
+  let isDragging = false;
+  let dragOffset = new THREE.Vector3();
+
+  const canvasWidth = 1200;
+  const canvasHeight = 800;
+
+  let textBoundingBox: THREE.Box3 | null = null;
+  let isHoveringBox = false;
+  let originalTextColor = 0x006699; // 原始颜色
+
   let camera: THREE.PerspectiveCamera;
   camera = new THREE.PerspectiveCamera(
     50, // 视野角度（FOV）
-    1200 / 800, // 宽高比
+    canvasWidth / canvasHeight, // 宽高比
     0.1, // 近裁剪面
     1000, // 远裁剪面
   );
@@ -49,14 +61,14 @@
     scene.background = new THREE.Color(0xf0f5ff); // 浅蓝色背景（模拟天空）
     // 初始化场景
     renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(1200, 800);
+    renderer.setSize(canvasWidth, canvasHeight);
     // 配置渲染器以适配EXR高动态范围
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 0.8;
     refInverter.value.appendChild(renderer.domElement);
 
     labelRenderer = new CSS2DRenderer();
-    labelRenderer.setSize(1200, 800);
+    labelRenderer.setSize(canvasWidth, canvasHeight);
     labelRenderer.domElement.style.position = 'absolute';
     labelRenderer.domElement.style.top = '0px';
     refInverter.value.appendChild(labelRenderer.domElement);
@@ -98,20 +110,6 @@
       // 启动每秒更新
       startTextUpdates();
     });
-
-    const material = new THREE.LineBasicMaterial({
-      color: 0x0000ff,
-    });
-
-    const points: any[] = [];
-    points.push(new THREE.Vector3(-10, 0, 0));
-    points.push(new THREE.Vector3(0, 10, 0));
-    points.push(new THREE.Vector3(10, 0, 0));
-
-    const geometry = new THREE.BufferGeometry().setFromPoints(points);
-
-    const line = new THREE.Line(geometry, material);
-    scene.add(line);
 
     // 加载模型
     new GLTFLoader().load('src/assets/images/house_pbr_V011.glb', (gltf) => {
@@ -156,11 +154,115 @@
         updateConnectionLine();
       }
     });
+
+    // 添加鼠标事件监听
+    window.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+    window.addEventListener('mouseleave', onMouseUp);
+  };
+
+  // 处理鼠标按下事件
+  const onMouseDown = (event: MouseEvent) => {
+    // 只对存在的文本和边界框生效
+    if (!textMesh || !textBoundingBox) return;
+
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+
+    const intersectsBox = raycaster.ray.intersectBox(textBoundingBox, new THREE.Vector3());
+    if (intersectsBox) {
+      isDragging = true;
+      if (textMesh.material instanceof THREE.MeshBasicMaterial) {
+        textMesh.material.color.set(0xff0000);
+      }
+      // 基于当前文本计算偏移量
+      const intersectPoint = intersectsBox;
+      textMesh.getWorldPosition(dragOffset);
+      dragOffset.sub(intersectPoint);
+    }
+  };
+
+  // 新增：重置文本相关状态（关键）
+  const resetTextState = () => {
+    textBoundingBox = null;
+    isHoveringBox = false;
+    // 如果正在拖动，强制结束（避免新旧对象状态冲突）
+    if (isDragging) {
+      isDragging = false;
+    }
+  };
+
+  // 处理鼠标移动事件
+  const onMouseMove = (event: MouseEvent) => {
+    // 若文本或边界框不存在，直接退出（避免操作已失效的对象）
+    if (!textMesh || !textBoundingBox) {
+      // 若之前处于悬停状态，强制重置颜色
+      if (isHoveringBox) {
+        isHoveringBox = false;
+      }
+      return;
+    }
+    // 拖动逻辑：确保基于当前文本计算
+    if (isDragging) {
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+
+      const plane = new THREE.Plane();
+      plane.setFromNormalAndCoplanarPoint(
+        camera.getWorldDirection(plane.normal),
+        textMesh.position,
+      );
+      const dragPoint = new THREE.Vector3();
+      raycaster.ray.intersectPlane(plane, dragPoint);
+
+      textMesh.position.copy(dragPoint.add(dragOffset));
+      updateConnectionLine();
+
+      // 实时更新新文本的边界框（拖动时位置变化）
+      textBoundingBox.setFromObject(textMesh);
+      return;
+    }
+    // 边界框检测：确保使用最新的边界框
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+
+    // 检测射线与当前文本边界框的交集
+    const intersectsBox = raycaster.ray.intersectBox(textBoundingBox, new THREE.Vector3());
+    const shouldHover = !!intersectsBox;
+
+    // 状态变化时更新颜色（基于当前文本）
+    if (shouldHover && !isHoveringBox) {
+      isHoveringBox = true;
+      if (textMesh.material instanceof THREE.MeshBasicMaterial) {
+        textMesh.material.color.set(0xff0000);
+      }
+    } else if (!shouldHover && isHoveringBox) {
+      isHoveringBox = false;
+      if (textMesh.material instanceof THREE.MeshBasicMaterial) {
+        textMesh.material.color.set(originalTextColor);
+      }
+    }
+  };
+
+  // 处理鼠标释放事件
+  const onMouseUp = () => {
+    isDragging = false;
+    if (textMesh && textMesh.material instanceof THREE.MeshBasicMaterial) {
+      // 颜色基于当前是否悬停在新文本上
+      textMesh.material.color.set(isHoveringBox ? 0xff0000 : originalTextColor);
+    }
   };
 
   // 更新文本内容的函数
   const updateText = () => {
     if (!font) return; // 确保字体已加载
+
+    // 移除旧文本前，先重置状态
+    resetTextState();
 
     // 移除旧的文本网格
     if (textMesh && scene) {
@@ -171,9 +273,8 @@
     const message = `Solar:\nPower: ${power.value}kW\nCurrent: ${current.value}A\nVoltage: ${voltage.value}V`;
 
     // 创建新的文本网格
-    const color = 0x006699;
     const matLite = new THREE.MeshBasicMaterial({
-      color: color,
+      color: originalTextColor,
       transparent: true,
       opacity: 0.4,
       side: THREE.DoubleSide,
@@ -183,12 +284,16 @@
     const geometry = new THREE.ShapeGeometry(shapes);
     geometry.computeBoundingBox();
     geometry.translate(-2, 2, 0.5); // 位置调整
+    geometry.computeBoundingBox(); // 平移后重新计算边界框（关键！）
 
     textMesh = new THREE.Mesh(geometry, matLite);
     scene.add(textMesh);
 
+    // 计算并保存世界坐标系中的边界框（关键）
+    textBoundingBox = new THREE.Box3().setFromObject(textMesh);
+
     // 文本更新后更新连接线
-    updateConnectionLine();
+    //updateConnectionLine();
   };
 
   // 创建或更新连接线的函数
@@ -209,7 +314,7 @@
     // 获取房屋模型的世界位置
     const houseWorldPos = new THREE.Vector3();
     houseModel.getWorldPosition(houseWorldPos);
-    console.log(houseWorldPos);
+    //console.log(houseWorldPos);
 
     // 稍微调整连接点，使其从房屋顶部连接
     const houseConnectionPoint = new THREE.Vector3(
@@ -218,22 +323,26 @@
       houseWorldPos.z + 0.5,
     );
 
-    // 获取文本的世界位置
-    const textWorldPos = new THREE.Vector3();
-    textMesh.getWorldPosition(textWorldPos);
-    const textConnectionPoint = new THREE.Vector3(
-      textWorldPos.x - 1.5,
-      textWorldPos.y + 1.2, // 向上偏移一些，连接到房屋顶部
-      textWorldPos.z + 0.5,
+    // 1. 获取几何体经过 translate 后的边界框中心（本地坐标系）
+    const textGeometry = textMesh.geometry;
+    // 确保边界框已计算（如果文本更新过，需要重新计算）
+    textGeometry.computeBoundingBox();
+    const bbox: any = textGeometry.boundingBox;
+    // 底部中间点 = X轴中点，Y轴最小值（底部），Z轴中点
+    const bottomMiddle = new THREE.Vector3(
+      (bbox.min.x + bbox.max.x) / 2, // X轴中间
+      bbox.min.y, // Y轴最小值（底部）
+      (bbox.min.z + bbox.max.z) / 2, // Z轴中间（如果文本是2D的，Z轴可能为0）
     );
-    //console.log(textWorldPos);
+
+    // 2. 将本地中心转换为世界坐标（叠加 textMesh 的世界位置）
+    const textWorldPos = new THREE.Vector3();
+    textMesh.localToWorld(textWorldPos.copy(bottomMiddle)); // 关键：本地坐标转世界坐标
 
     // 创建线条的点
-    const points = [houseConnectionPoint, textConnectionPoint];
-
+    const points = [houseConnectionPoint, textWorldPos];
     // 创建线条几何体
     const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
-
     // 创建线条并添加到场景
     connectionLine = new THREE.Line(lineGeometry, lineMaterial);
     scene.add(connectionLine);
@@ -241,7 +350,7 @@
 
   // 启动每秒更新变量并刷新文本
   const startTextUpdates = () => {
-    setInterval(() => {
+    setTimeout(() => {
       // 随机更新变量值（模拟实时数据变化）
       current.value = random(1, 10);
       voltage.value = random(10, 100);
@@ -250,7 +359,7 @@
       // 更新文本显示
       updateText();
       // 更新连接线（文本位置变化后）
-      updateConnectionLine();
+      //updateConnectionLine();
     }, 1000); // 每秒更新一次
   };
 
