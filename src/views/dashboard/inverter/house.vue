@@ -22,6 +22,11 @@
   scene = new THREE.Scene();
   let labelRenderer;
 
+  // 添加一个全局变量存储连接线
+  let connectionLine: THREE.Line | null = null;
+  // 存储房屋模型引用
+  let houseModel: THREE.Object3D | null = null;
+
   let camera: THREE.PerspectiveCamera;
   camera = new THREE.PerspectiveCamera(
     50, // 视野角度（FOV）
@@ -94,9 +99,24 @@
       startTextUpdates();
     });
 
+    const material = new THREE.LineBasicMaterial({
+      color: 0x0000ff,
+    });
+
+    const points: any[] = [];
+    points.push(new THREE.Vector3(-10, 0, 0));
+    points.push(new THREE.Vector3(0, 10, 0));
+    points.push(new THREE.Vector3(10, 0, 0));
+
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+
+    const line = new THREE.Line(geometry, material);
+    scene.add(line);
+
     // 加载模型
     new GLTFLoader().load('src/assets/images/house_pbr_V011.glb', (gltf) => {
       const model = gltf.scene;
+      houseModel = model;
       model.position.set(2, -1.5, 0);
       model.scale.set(0.5, 0.5, 0.5);
       scene.add(model);
@@ -130,6 +150,11 @@
             mat.needsUpdate = true;
           }
         }); */
+
+      // 模型加载完成后尝试创建连接线
+      if (textMesh) {
+        updateConnectionLine();
+      }
     });
   };
 
@@ -161,6 +186,57 @@
 
     textMesh = new THREE.Mesh(geometry, matLite);
     scene.add(textMesh);
+
+    // 文本更新后更新连接线
+    updateConnectionLine();
+  };
+
+  // 创建或更新连接线的函数
+  const updateConnectionLine = () => {
+    if (!houseModel || !textMesh) return;
+
+    // 移除旧的连接线
+    if (connectionLine && scene) {
+      scene.remove(connectionLine);
+    }
+
+    // 创建线条材质
+    const lineMaterial = new THREE.LineBasicMaterial({
+      color: 0x838383, // 与文本相同的颜色
+      linewidth: 2,
+    });
+
+    // 获取房屋模型的世界位置
+    const houseWorldPos = new THREE.Vector3();
+    houseModel.getWorldPosition(houseWorldPos);
+    console.log(houseWorldPos);
+
+    // 稍微调整连接点，使其从房屋顶部连接
+    const houseConnectionPoint = new THREE.Vector3(
+      houseWorldPos.x - 3.5,
+      houseWorldPos.y + 1.5, // 向上偏移一些，连接到房屋顶部
+      houseWorldPos.z + 0.5,
+    );
+
+    // 获取文本的世界位置
+    const textWorldPos = new THREE.Vector3();
+    textMesh.getWorldPosition(textWorldPos);
+    const textConnectionPoint = new THREE.Vector3(
+      textWorldPos.x - 1.5,
+      textWorldPos.y + 1.2, // 向上偏移一些，连接到房屋顶部
+      textWorldPos.z + 0.5,
+    );
+    //console.log(textWorldPos);
+
+    // 创建线条的点
+    const points = [houseConnectionPoint, textConnectionPoint];
+
+    // 创建线条几何体
+    const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+
+    // 创建线条并添加到场景
+    connectionLine = new THREE.Line(lineGeometry, lineMaterial);
+    scene.add(connectionLine);
   };
 
   // 启动每秒更新变量并刷新文本
@@ -173,6 +249,8 @@
 
       // 更新文本显示
       updateText();
+      // 更新连接线（文本位置变化后）
+      updateConnectionLine();
     }, 1000); // 每秒更新一次
   };
 
