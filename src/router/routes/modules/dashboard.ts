@@ -55,6 +55,14 @@ const dashboard: AppRouteModule = {
         title: '房屋效果',
       },
     },
+    {
+      path: 'flowprotical',
+      name: 'Flowprotical',
+      component: () => import('@/views/dashboard/inverter/flow.vue'),
+      meta: {
+        title: '流动粒子',
+      },
+    },
   ],
 };
 
