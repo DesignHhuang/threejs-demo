@@ -71,7 +71,7 @@
     scene.add(helper);
 
     // 添加点光源增强粒子亮度
-    const pointLight = new THREE.PointLight(0xfdfdf9, 100, 8);
+    const pointLight = new THREE.PointLight(0xffe770, 100, 10);
     pointLight.position.set(-7, 8, 0);
     scene.add(pointLight);
 
