@@ -56,6 +56,30 @@
 
     // 加载房屋模型
     addHouseModel();
+
+    // 加载管道
+    const geometry = new THREE.CylinderGeometry(0.1, 0.1, 6, 32, 10, true);
+    const material = new THREE.MeshStandardMaterial({
+      color: 0xf9f9f9,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.3,
+      emissive: 0xf9f9f9,
+      emissiveIntensity: 10,
+    });
+    const cylinder = new THREE.Mesh(geometry, material);
+    cylinder.position.set(3, 5, 5);
+    scene.add(cylinder);
+
+    const greengeometry = new THREE.CylinderGeometry(0.06, 0.06, 2, 32, 10);
+    const greenmaterial = new THREE.MeshStandardMaterial({
+      color: 0x01d05b,
+      emissive: 0x01d05b,
+      emissiveIntensity: 2,
+    });
+    const greenCylinder = new THREE.Mesh(greengeometry, greenmaterial);
+    greenCylinder.position.set(3, 5, 5);
+    scene.add(greenCylinder);
   };
 
   // 添加灯光
